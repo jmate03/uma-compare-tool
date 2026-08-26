@@ -297,7 +297,7 @@ function levendist({s, kanamap:skana, kanjimap:skanji}, {s:t, kanamap:tkana, kan
 }
 
 const normalnames = Object.fromEntries(Object.entries(skillnames).map(([id,names]) => {
-	const s = normalize(names[0]);
+	const s = normalize(names[1]); // 0 for japanese names, 1 for english names
 	return [id, {s, kanamap: s.split('').map(isKana), kanjimap: s.split('').map(isKanji)}];
 }));
 
@@ -365,12 +365,16 @@ export async function readUma(cv, workers, img, canv) {
 	const {stats, skleft, skright} = await readStatsSkills(cv, workers, canv, src);
 	let uniqueLv = 0;
 	const skills = cleanMultilineSkills(skleft).concat(cleanMultilineSkills(skright)).map(line => {
+		
+		// DEBUG : view raw ocr lines to see what the OCR is actually returning and how it differs from the expected skill names
+		// console.log('raw OCR line:', JSON.stringify(line.text));
+
 		// any potential \s already stripped by normalize
 		const s = normalize(line.text).replace(/Lvl(\d)$/m, (_, lv) => {
     		uniqueLv = +lv;
     		return '';
 		});
-		return {candidates: closest(s), bbox: line.bbox};
+		return {rawText: s, bbox: line.bbox}; // old: candidates: closest(s), bbox: line.bbox};
 	});
 	deleteAptitudeRanges(aptRanges);
 	return {stats, aptitudes, skills, uniqueLv, img: src};

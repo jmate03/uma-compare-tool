@@ -43,7 +43,7 @@ export function UmaReader() {
 					stats: result.stats, 
 					aptitudes: result.aptitudes, 
 					uniqueLv: result.uniqueLv, 
-					skills: result.skills.map((s: any) => s.candidates.map((id: string) => (skillnames as any)[id]?.[0] ?? `??? (${id})`)) 
+					skills: result.skills.map((s: any) => s.rawText) // old: candidates.map((id: string) => (skillnames as any)[id]?.[1] ?? `??? (${id})`)) 
 				}, null, 2)}</pre>
 			)}
 		</div>
