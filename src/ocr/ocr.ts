@@ -1,3 +1,4 @@
+// adapted from uma-tools by alpha123 (https://github.com/alpha123/uma-tools)
 // @ts-nocheck
 import skilldata from '../../data/skill_data.json';
 import skillnames from '../../data/skillnames.json';
@@ -365,7 +366,7 @@ export async function readUma(cv, workers, img, canv) {
 	const {stats, skleft, skright} = await readStatsSkills(cv, workers, canv, src);
 	let uniqueLv = 0;
 	const skills = cleanMultilineSkills(skleft).concat(cleanMultilineSkills(skright)).map(line => {
-		
+
 		// DEBUG : view raw ocr lines to see what the OCR is actually returning and how it differs from the expected skill names
 		// console.log('raw OCR line:', JSON.stringify(line.text));
 
