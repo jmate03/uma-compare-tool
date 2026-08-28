@@ -1,11 +1,10 @@
-import './App.css'
-import { UmaReader } from './components/UmaReader'
+// import './App.css'
+// import { UmaReader } from './components/UmaReader' // OCR not ready yet
+import HomeScreen from './pages/HomeScreen';
 
 function App() {
   return (
-		<div className="App">
-			<UmaReader />
-		</div>
+  	<HomeScreen />
 	);
 }
 
