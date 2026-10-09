@@ -1,0 +1,86 @@
+.uma-form {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	max-width: 42rem;
+	margin: 0 auto;
+	padding: 24px;
+}
+
+.uma-form__section {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.uma-form__heading {
+	font-size: 1.125rem; 
+	font-weight: 600;
+	color:#f3f3f4;
+}
+
+.uma-form__label {
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: #ced8e7;
+}
+
+.uma-form__label--small {
+	font-size: 0.75rem;
+	color: #ced8e7;
+	text-transform: capitalize;
+}
+
+.uma-form__input,
+.uma-form__select {
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	padding: 8px 12px;
+}
+
+.uma-form__input--small {
+	padding: 4px 8px;
+	width: 100%;
+}
+
+.uma-form__grid {
+	display: grid;
+	gap: 12px;
+}
+
+.uma-form__grid--2 {
+	grid-template-columns: repeat(2, 1fr);
+}
+
+.uma-form__grid--4 {
+	grid-template-columns: repeat(4, 1fr);
+}
+.uma-form__grid--5 {
+	grid-template-columns: repeat(5, 1fr);
+}
+.uma-form__field {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.uma-form__placeholder {
+	font-size: 0.875rem;
+	font-style: italic;
+	color: #9ca3af;
+}
+
+.uma-form__submit {
+	background-color: #2563eb;
+	color: white;
+	font-weight: 500;
+	border: none;
+	border-radius: 6px;
+	padding: 8px 16px;
+	cursor: pointer;
+	align-self: flex-start;
+}
+
+.uma-form__submit:hover {
+	background-color: #1d4ed8;
+}
