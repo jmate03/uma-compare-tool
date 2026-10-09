@@ -2,7 +2,7 @@
 Theres probably a better name for this
 
 This tool allows a user to easily compare parents from umamusume to help determine which ones are worth keeping.
-Eventually I'd like to automate the input with ocr but until then umas are manually entered.
+Eventually I'd like to be able to do the uma input with ocr but until then umas are manually imported through getting an [umadump](https://werseter.github.io/umadump/).
 
 Built with React + Vite, written in Typescript
 ## Acknowledgements

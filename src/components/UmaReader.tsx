@@ -1,7 +1,7 @@
 // user uploads a screenshot of a uma and it is read with OCR and displayed as JSON
 import { useRef, useState } from 'react';
 import { getOpenCv, makeWorkers, killWorkers, readUma } from '../ocr/ocr.ts';
-import skillnames from '../../data/skillnames.json';
+import skillnames from '../../data/skillnames_old.json';
 
 export function UmaReader() {
 	const imgRef = useRef<HTMLImageElement>(null);
