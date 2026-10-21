@@ -1,7 +1,7 @@
 // Spark-based filtering for the uma list
 import type { SparkCategory, StoredUma } from './UmaTypes';
 import { sparkCategory } from './UmaImport';
-import sparkNames from '../../data/umasparknames.json';
+import { SPARK_NAMES } from './UmaNames';
 
 // A spark's identity is its factor ID without the last (stars) digit,
 // so 2009701/2009702/2009703 are all "Sprint Corners" (base 200970).
@@ -16,14 +16,10 @@ export interface SparkOption {
 const CATEGORY_ORDER: SparkCategory[] = ['blue', 'pink', 'green', 'white'];
 
 // One entry per spark, for the filter picker. Names are unique per base.
-export const SPARK_OPTIONS: SparkOption[] = [
-	...new Map(
-		Object.entries(sparkNames as Record<string, string>).map(([id, name]) => {
-			const base = sparkBase(Number(id));
-			return [base, { base, name, category: sparkCategory(Number(id)) }] as const;
-		})
-	).values(),
-].sort((a, b) =>
+// sparkCategory only looks at the ID's magnitude, so base * 10 works for it.
+export const SPARK_OPTIONS: SparkOption[] = [...SPARK_NAMES].map(
+	([base, name]) => ({ base, name, category: sparkCategory(base * 10) })
+).sort((a, b) =>
 	CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category) || a.name.localeCompare(b.name)
 );
 

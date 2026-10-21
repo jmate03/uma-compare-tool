@@ -25,6 +25,12 @@ export function UmaList() {
 		setUmas(await umaStore.list());
 	}
  
+	async function handleClear() {
+		if (!confirm(`Delete all ${umas.length} umas? This also removes your notes and types, and can't be undone.`)) return;
+		await umaStore.clear();
+		setUmas([]);
+	}
+ 
 	async function handleDelete(id: string) {
 		await umaStore.remove(id);
 		setUmas(await umaStore.list());
@@ -73,6 +79,15 @@ export function UmaList() {
 						}}
 					/>
 				</label>
+
+				<button
+					className="uma-list__clear"
+					type="button"
+					disabled={umas.length === 0}
+					onClick={handleClear}
+				>
+					Clear all
+				</button>
 			</header>
 
 			<SparkFilterBar

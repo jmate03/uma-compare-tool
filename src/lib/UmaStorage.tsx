@@ -7,6 +7,7 @@ export interface UmaStore {
 	save(values: UmaFormValues, id?: string): Promise<StoredUma>; // id given = update
 	remove(id: string): Promise<void>;
 	replaceAll(umas: StoredUma[]): Promise<void>; // used by the game dump import
+	clear(): Promise<void>; // deletes every uma
 }
 
 // ---------- localStorage implementation ----------
@@ -90,6 +91,10 @@ export const localUmaStore: UmaStore = {
 
 	async replaceAll(umas) {
 		writeAll(umas);
+	},
+
+	async clear() {
+		localStorage.removeItem(STORAGE_KEY);
 	},
 };
 

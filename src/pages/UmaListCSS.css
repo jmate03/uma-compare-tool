@@ -56,6 +56,27 @@
 	background: #1d4ed8;
 }
 
+.uma-list__clear {
+	background: transparent;
+	color: #dc2626;
+	border: 1px solid #dc2626;
+	padding: 7px 14px;
+	border-radius: 6px;
+	font: inherit;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.uma-list__clear:hover:not(:disabled) {
+	background: #dc2626;
+	color: white;
+}
+
+.uma-list__clear:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
 /* ---------- Spark filters ---------- */
 
 .spark-filter {

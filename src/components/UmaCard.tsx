@@ -1,6 +1,6 @@
 import type { Grade, StoredUma } from '../lib/UmaTypes';
-import { umaName } from '../lib/UmaNames';
-import { sparkByBase, sparkTotals } from '../lib/UmaFilter';
+import { sparkName, umaName } from '../lib/UmaNames';
+import { sparkTotals } from '../lib/UmaFilter';
 
 interface UmaCardProps {
 	uma: StoredUma;
@@ -55,7 +55,7 @@ export function UmaCard({ uma, byId, includeParents, highlighted, onDelete }: Um
 
 			<div className="uma-card__sparks">
 				{sparks.map(s => {
-					const name = sparkByBase.get(s.base)?.name ?? `#${s.base}`;
+					const name = sparkName(s.base);
 					const className = `spark spark--${s.category}${highlighted.has(s.base) ? ' spark--match' : ''}`;
 					return includeParents ? (
 						<span
