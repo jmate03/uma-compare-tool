@@ -5,10 +5,14 @@ import type { StoredUma } from '../lib/UmaTypes';
 import { umaName } from '../lib/UmaNames'
 import './UmaListCSS.css'
 import { UmaCard } from '../components/UmaCard';
+import { SparkFilterBar } from '../components/SparkFilterBar';
+import { matchesSparkFilters, type SparkFilter } from '../lib/UmaFilter';
 
 export function UmaList() {
 	const [umas, setUmas] = useState<StoredUma[]>([]);
 	const [search, setSearch] = useState('');
+	const [sparkFilters, setSparkFilters] = useState<SparkFilter[]>([]);
+	const [includeParents, setIncludeParents] = useState(true);
  
 	// Load saved umas once when the screen opens
 	useEffect(() => {
@@ -29,10 +33,16 @@ export function UmaList() {
 	// Lookup table so cards can show the names of parents you have saved
 	const byId = useMemo(() => new Map(umas.map(u => [u.id, u])), [umas]);
  
-	// TODO: add more filters here (type, sparks, aptitudes...)
+	// Sparks to highlight on the cards
+	const highlighted = useMemo(() => new Set(sparkFilters.map(f => f.base)), [sparkFilters]);
+
+	// TODO: add more filters here (type, aptitudes...)
 	const visible = useMemo(
-		() => umas.filter(u => umaName(u).toLowerCase().includes(search.toLowerCase())),
-		[umas, search]
+		() => umas.filter(u =>
+			umaName(u).toLowerCase().includes(search.toLowerCase()) &&
+			matchesSparkFilters(u, sparkFilters, byId, includeParents)
+		),
+		[umas, search, sparkFilters, byId, includeParents]
 	);
  
 	return (
@@ -64,15 +74,22 @@ export function UmaList() {
 					/>
 				</label>
 			</header>
- 
+
+			<SparkFilterBar
+				filters={sparkFilters}
+				onChange={setSparkFilters}
+				includeParents={includeParents}
+				onIncludeParentsChange={setIncludeParents}
+			/>
+
 			{visible.length === 0 ? (
 				<p className="uma-list__empty">
-					{umas.length === 0 ? 'No umas yet. Import trained_chara_data.json to get started.' : 'No umas match your search.'}
+					{umas.length === 0 ? 'No umas yet. Import trained_chara_data.json to get started.' : 'No umas match your search and filters.'}
 				</p>
 			) : (
 				<div className="uma-list__grid">
 					{visible.map(uma => (
-						<UmaCard key={uma.id} uma={uma} byId={byId} onDelete={handleDelete} />
+						<UmaCard key={uma.id} uma={uma} byId={byId} includeParents={includeParents} highlighted={highlighted} onDelete={handleDelete} />
 					))}
 				</div>
 			)}

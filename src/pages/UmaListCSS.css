@@ -56,6 +56,100 @@
 	background: #1d4ed8;
 }
 
+/* ---------- Spark filters ---------- */
+
+.spark-filter {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+
+.spark-filter__add {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.spark-filter input {
+	padding: 6px 10px;
+	border-radius: 6px;
+	border: 1px solid var(--card-border);
+	background: var(--card);
+	color: var(--text);
+}
+
+.spark-filter__name {
+	min-width: 280px;
+}
+
+.spark-filter__stars {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--muted);
+}
+
+.spark-filter__stars input {
+	width: 56px;
+}
+
+.spark-filter__button {
+	background: var(--accent);
+	color: white;
+	border: none;
+	padding: 7px 14px;
+	border-radius: 6px;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.spark-filter__button:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+.spark-filter__parents {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.85rem;
+	color: var(--muted);
+}
+
+.spark-filter__chips {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+}
+
+.spark-filter__chip {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 0.8rem;
+}
+
+.spark-filter__remove,
+.spark-filter__clear {
+	background: none;
+	border: none;
+	color: var(--muted);
+	cursor: pointer;
+	padding: 0 2px;
+}
+
+.spark-filter__remove:hover,
+.spark-filter__clear:hover {
+	color: #ef4444;
+}
+
+.spark-filter__clear {
+	font-size: 0.75rem;
+}
+
 .uma-list__empty {
 	color: var(--muted);
 	text-align: center;
@@ -188,6 +282,20 @@
 
 .spark__stars {
 	color: #fbbf24;
+}
+
+/* Spark that one of the active filters is looking for */
+.spark--match {
+	box-shadow: 0 0 0 1px #fbbf24;
+	background: #3a3424;
+}
+
+/* Marks a spark the uma itself has (vs only inherited from parents) */
+.spark__own {
+	color: var(--accent);
+	font-size: 0.6rem;
+	margin-right: 4px;
+	vertical-align: 1px;
 }
 
 /* Footer */

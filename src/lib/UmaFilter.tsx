@@ -1,0 +1,80 @@
+// Spark-based filtering for the uma list
+import type { SparkCategory, StoredUma } from './UmaTypes';
+import { sparkCategory } from './UmaImport';
+import sparkNames from '../../data/umasparknames.json';
+
+// A spark's identity is its factor ID without the last (stars) digit,
+// so 2009701/2009702/2009703 are all "Sprint Corners" (base 200970).
+export const sparkBase = (factorId: number) => Math.floor(factorId / 10);
+
+export interface SparkOption {
+	base: number;
+	name: string;
+	category: SparkCategory;
+}
+
+const CATEGORY_ORDER: SparkCategory[] = ['blue', 'pink', 'green', 'white'];
+
+// One entry per spark, for the filter picker. Names are unique per base.
+export const SPARK_OPTIONS: SparkOption[] = [
+	...new Map(
+		Object.entries(sparkNames as Record<string, string>).map(([id, name]) => {
+			const base = sparkBase(Number(id));
+			return [base, { base, name, category: sparkCategory(Number(id)) }] as const;
+		})
+	).values(),
+].sort((a, b) =>
+	CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category) || a.name.localeCompare(b.name)
+);
+
+export const sparkByName = new Map(SPARK_OPTIONS.map(o => [o.name.toLowerCase(), o]));
+export const sparkByBase = new Map(SPARK_OPTIONS.map(o => [o.base, o]));
+
+export interface SparkFilter {
+	base: number;
+	minStars: number;
+}
+
+export interface SparkTotal {
+	base: number;
+	category: SparkCategory;
+	own: number;   // stars on the uma itself
+	total: number; // own + parents (or just own when parents aren't included)
+}
+
+// Stars per spark for an uma, optionally including both parents' sparks.
+// Sorted blue → pink → green → white, then by total stars.
+export function sparkTotals(uma: StoredUma, byId: Map<string, StoredUma>, includeParents: boolean): SparkTotal[] {
+	const totals = new Map<number, SparkTotal>();
+	const add = (factorId: number, stars: number, isOwn: boolean) => {
+		const base = sparkBase(factorId);
+		const t = totals.get(base) ?? { base, category: sparkCategory(factorId), own: 0, total: 0 };
+		if (isOwn) t.own += stars;
+		t.total += stars;
+		totals.set(base, t);
+	};
+
+	for (const s of uma.sparks) add(s.factorId, s.stars, true);
+	if (includeParents) {
+		for (const p of uma.parents) {
+			const sparks = p.kind === 'saved' ? byId.get(p.umaId)?.sparks ?? [] : p.sparks;
+			for (const s of sparks) add(s.factorId, s.stars, false);
+		}
+	}
+
+	return [...totals.values()].sort((a, b) =>
+		CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category) || b.total - a.total
+	);
+}
+
+// All filters must match (AND)
+export function matchesSparkFilters(
+	uma: StoredUma,
+	filters: SparkFilter[],
+	byId: Map<string, StoredUma>,
+	includeParents: boolean
+): boolean {
+	if (filters.length === 0) return true;
+	const totals = new Map(sparkTotals(uma, byId, includeParents).map(t => [t.base, t.total]));
+	return filters.every(f => (totals.get(f.base) ?? 0) >= f.minStars);
+}

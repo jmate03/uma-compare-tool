@@ -1,14 +1,12 @@
-import type { Grade, Spark, StoredUma } from '../lib/UmaTypes';
+import type { Grade, StoredUma } from '../lib/UmaTypes';
 import { umaName } from '../lib/UmaNames';
-import sparkNames from '../../data/umasparknames.json';
-
-const sparkLabel = (s: Spark) => (sparkNames as Record<string, string>)[s.factorId] ?? `#${s.factorId}`;
-
-const SPARK_ORDER = ['blue', 'pink', 'green', 'white'] as const;
+import { sparkByBase, sparkTotals } from '../lib/UmaFilter';
 
 interface UmaCardProps {
 	uma: StoredUma;
 	byId: Map<string, StoredUma>; // to look up parents that are your own saved umas
+	includeParents: boolean; // show sparks summed with both parents' sparks
+	highlighted: Set<number>; // spark bases from the active filters
 	onDelete: (id: string) => void;
 }
 
@@ -26,11 +24,8 @@ function GradeRow({ label, grades }: { label: string; grades: Record<string, Gra
 	);
 }
 
-export function UmaCard({ uma, byId, onDelete }: UmaCardProps) {
-	// Own sparks, grouped blue → pink → green → white
-	const sparks = [...uma.sparks].sort(
-		(a, b) => SPARK_ORDER.indexOf(a.category) - SPARK_ORDER.indexOf(b.category)
-	);
+export function UmaCard({ uma, byId, includeParents, highlighted, onDelete }: UmaCardProps) {
+	const sparks = sparkTotals(uma, byId, includeParents);
 
 	const parentNames = uma.parents.map(p =>
 		p.kind === 'saved' ? umaName(byId.get(p.umaId) ?? {}) : umaName(p)
@@ -59,11 +54,24 @@ export function UmaCard({ uma, byId, onDelete }: UmaCardProps) {
 			</div>
 
 			<div className="uma-card__sparks">
-				{sparks.map(s => (
-					<span key={s.factorId} className={`spark spark--${s.category}`}>
-						{sparkLabel(s)} <span className="spark__stars">{'★'.repeat(s.stars)}</span>
-					</span>
-				))}
+				{sparks.map(s => {
+					const name = sparkByBase.get(s.base)?.name ?? `#${s.base}`;
+					const className = `spark spark--${s.category}${highlighted.has(s.base) ? ' spark--match' : ''}`;
+					return includeParents ? (
+						<span
+							key={s.base}
+							className={className}
+							title={s.own ? `${s.own}★ on this uma, ${s.total - s.own}★ from parents` : 'From parents only'}
+						>
+							{s.own > 0 && <span className="spark__own" aria-label="On this uma">●</span>}
+							<span className="spark__stars">{s.total}★</span> {name}
+						</span>
+					) : (
+						<span key={s.base} className={className}>
+							{name} <span className="spark__stars">{'★'.repeat(s.total)}</span>
+						</span>
+					);
+				})}
 			</div>
 
 			<footer className="uma-card__footer">
