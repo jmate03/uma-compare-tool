@@ -4,7 +4,8 @@ This tool allows a user to easily compare umas from Umamusume to help determine 
 Search through your list of umas using filters and compare them in either the parent view or the ace view (WIP).  
 Eventually I'd like to be able to do the uma input with ocr but until then umas are manually imported through getting an [umadump](https://werseter.github.io/umadump/).  
 Built with React + Vite, written in Typescript
-<img width="2559" height="1439" alt="image" src="https://github.com/user-attachments/assets/4359893c-2384-4f59-9960-56f89c49a74a" />
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/06d7c994-ad0b-4e4c-b682-473ef2c17d0e" />
+
 
 
 ## How to use the tool  
