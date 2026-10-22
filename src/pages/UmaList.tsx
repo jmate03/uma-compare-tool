@@ -40,7 +40,7 @@ export function UmaList() {
 	const byId = useMemo(() => new Map(umas.map(u => [u.id, u])), [umas]);
  
 	// Sparks to highlight on the cards
-	const highlighted = useMemo(() => new Set(sparkFilters.map(f => f.base)), [sparkFilters]);
+	const highlighted = useMemo(() => new Set(sparkFilters.flatMap(f => (f.base === null ? [] : [f.base]))), [sparkFilters]);
 
 	// TODO: add more filters here (type, aptitudes...)
 	const visible = useMemo(

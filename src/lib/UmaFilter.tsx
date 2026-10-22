@@ -13,7 +13,7 @@ export interface SparkOption {
 	category: SparkCategory;
 }
 
-const CATEGORY_ORDER: SparkCategory[] = ['blue', 'pink', 'green', 'white'];
+export const CATEGORY_ORDER: SparkCategory[] = ['blue', 'pink', 'green', 'white'];
 
 // One entry per spark, for the filter picker. Names are unique per base.
 // sparkCategory only looks at the ID's magnitude, so base * 10 works for it.
@@ -23,11 +23,16 @@ export const SPARK_OPTIONS: SparkOption[] = [...SPARK_NAMES].map(
 	CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category) || a.name.localeCompare(b.name)
 );
 
-export const sparkByName = new Map(SPARK_OPTIONS.map(o => [o.name.toLowerCase(), o]));
 export const sparkByBase = new Map(SPARK_OPTIONS.map(o => [o.base, o]));
 
+export const SPARK_OPTIONS_BY_CATEGORY = Object.fromEntries(
+	CATEGORY_ORDER.map(c => [c, SPARK_OPTIONS.filter(o => o.category === c)])
+) as Record<SparkCategory, SparkOption[]>;
+
 export interface SparkFilter {
-	base: number;
+	id: string;
+	category: SparkCategory;
+	base: number | null; // null = any spark of this category
 	minStars: number;
 }
 
@@ -63,7 +68,7 @@ export function sparkTotals(uma: StoredUma, byId: Map<string, StoredUma>, includ
 	);
 }
 
-// All filters must match (AND)
+// All filters must match (AND). An "any" filter matches if some spark of its category is high enough.
 export function matchesSparkFilters(
 	uma: StoredUma,
 	filters: SparkFilter[],
@@ -71,6 +76,11 @@ export function matchesSparkFilters(
 	includeParents: boolean
 ): boolean {
 	if (filters.length === 0) return true;
-	const totals = new Map(sparkTotals(uma, byId, includeParents).map(t => [t.base, t.total]));
-	return filters.every(f => (totals.get(f.base) ?? 0) >= f.minStars);
+	const totals = sparkTotals(uma, byId, includeParents);
+	const byBase = new Map(totals.map(t => [t.base, t.total]));
+	return filters.every(f =>
+		f.base === null
+			? totals.some(t => t.category === f.category && t.total >= f.minStars)
+			: (byBase.get(f.base) ?? 0) >= f.minStars
+	);
 }
