@@ -38,6 +38,7 @@ export function SparkFilterBar({ filters, onChange, includeParents, onIncludePar
 	return (
 		<details className="spark-filter" open={open} onToggle={e => setOpen(e.currentTarget.open)}>
 			<summary className="spark-filter__summary">
+				<span className="spark-filter__chevron" aria-hidden="true" />
 				Spark filters
 				{filters.length > 0 && <span className="spark-filter__count">{filters.length}</span>}
 			</summary>

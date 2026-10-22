@@ -98,6 +98,26 @@
 	font-weight: 600;
 	cursor: pointer;
 	user-select: none;
+	list-style: none;
+}
+
+/* Hide the browser's own disclosure triangle; the chevron replaces it */
+.spark-filter__summary::-webkit-details-marker {
+	display: none;
+}
+
+/* Points right when collapsed, down when open */
+.spark-filter__chevron {
+	width: 7px;
+	height: 7px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(-45deg);
+	transition: transform 0.15s ease;
+}
+
+.spark-filter[open] .spark-filter__chevron {
+	transform: rotate(45deg);
 }
 
 .spark-filter__count {

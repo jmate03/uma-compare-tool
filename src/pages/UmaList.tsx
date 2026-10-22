@@ -55,7 +55,7 @@ export function UmaList() {
 		<div className="uma-list">
 			<header className="uma-list__toolbar">
 				<h1 className="uma-list__title">
-					Umas <span className="uma-list__count">{visible.length}</span>
+					uma-compare-tool <span className="uma-list__count">{visible.length}</span>
 				</h1>
  
 				<input

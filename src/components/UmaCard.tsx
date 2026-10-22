@@ -64,11 +64,11 @@ export function UmaCard({ uma, byId, includeParents, highlighted, onDelete }: Um
 							title={s.own ? `${s.own}★ on this uma, ${s.total - s.own}★ from parents` : 'From parents only'}
 						>
 							{s.own > 0 && <span className="spark__own" aria-label="On this uma">●</span>}
-							<span className="spark__stars">{s.total}★</span> {name}
+							<span className="spark__stars">{s.total} ★</span> {name}
 						</span>
 					) : (
 						<span key={s.base} className={className}>
-							{name} <span className="spark__stars">{'★'.repeat(s.total)}</span>
+							<span className="spark__stars">{s.total} ★</span> {name}
 						</span>
 					);
 				})}
