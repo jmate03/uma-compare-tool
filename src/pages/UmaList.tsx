@@ -36,6 +36,11 @@ export function UmaList() {
 		setUmas(await umaStore.list());
 	}
  
+	async function handleNotesChange(id: string, notes: string) {
+		setUmas(prev => prev.map(u => (u.id === id ? { ...u, notes } : u)));
+		const uma = umas.find(u => u.id === id);
+		if (uma) await umaStore.save({ ...uma, notes }, id);
+	}
 	// Lookup table so cards can show the names of parents you have saved
 	const byId = useMemo(() => new Map(umas.map(u => [u.id, u])), [umas]);
  
@@ -104,7 +109,7 @@ export function UmaList() {
 			) : (
 				<div className="uma-list__grid">
 					{visible.map(uma => (
-						<UmaCard key={uma.id} uma={uma} byId={byId} includeParents={includeParents} highlighted={highlighted} onDelete={handleDelete} />
+						<UmaCard key={uma.id} uma={uma} byId={byId} includeParents={includeParents} highlighted={highlighted} onNotesChange={handleNotesChange} onDelete={handleDelete} />
 					))}
 				</div>
 			)}

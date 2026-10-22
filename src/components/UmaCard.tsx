@@ -1,31 +1,26 @@
-import type { Grade, StoredUma } from '../lib/UmaTypes';
+import { useState } from 'react';
+import type { StoredUma } from '../lib/UmaTypes';
 import { sparkName, umaName } from '../lib/UmaNames';
 import { sparkTotals } from '../lib/UmaFilter';
 
+// Typing past the cap is allowed, but notes over it aren't saved until trimmed
+const NOTES_LIMIT = 100;
+const NOTES_WARN_AT = 80; // character counter appears past this
+
+// Parent-focused card: stats and aptitudes are left off on purpose (they're for the future Aces view)
 interface UmaCardProps {
 	uma: StoredUma;
 	byId: Map<string, StoredUma>; // to look up parents that are your own saved umas
 	includeParents: boolean; // show sparks summed with both parents' sparks
 	highlighted: Set<number>; // spark bases from the active filters
+	onNotesChange: (id: string, notes: string) => void;
 	onDelete: (id: string) => void;
 }
 
-function GradeRow({ label, grades }: { label: string; grades: Record<string, Grade> }) {
-	return (
-		<div className="uma-card__grade-row">
-			<span className="uma-card__grade-label">{label}</span>
-			{Object.entries(grades).map(([key, grade]) => (
-				<span key={key} className="uma-card__grade">
-					<span className="uma-card__grade-key">{key}</span>
-					<span className={`grade grade--${grade}`}>{grade}</span>
-				</span>
-			))}
-		</div>
-	);
-}
-
-export function UmaCard({ uma, byId, includeParents, highlighted, onDelete }: UmaCardProps) {
+export function UmaCard({ uma, byId, includeParents, highlighted, onNotesChange, onDelete }: UmaCardProps) {
 	const sparks = sparkTotals(uma, byId, includeParents);
+	const [notes, setNotes] = useState(uma.notes);
+	const overLimit = notes.length > NOTES_LIMIT;
 
 	const parentNames = uma.parents.map(p =>
 		p.kind === 'saved' ? umaName(byId.get(p.umaId) ?? {}) : umaName(p)
@@ -37,21 +32,6 @@ export function UmaCard({ uma, byId, includeParents, highlighted, onDelete }: Um
 				<h2 className="uma-card__name">{umaName(uma)}</h2>
 				{uma.score !== undefined && <span className="uma-card__score">{uma.score.toLocaleString()}</span>}
 			</header>
-
-			<div className="uma-card__stats">
-				{Object.entries(uma.stats).map(([stat, value]) => (
-					<div key={stat} className="uma-card__stat">
-						<span className="uma-card__stat-label">{stat}</span>
-						<span className="uma-card__stat-value">{value}</span>
-					</div>
-				))}
-			</div>
-
-			<div className="uma-card__grades">
-				<GradeRow label="Track" grades={uma.track} />
-				<GradeRow label="Dist" grades={uma.distance} />
-				<GradeRow label="Style" grades={uma.style} />
-			</div>
 
 			<div className="uma-card__sparks">
 				{sparks.map(s => {
@@ -74,11 +54,27 @@ export function UmaCard({ uma, byId, includeParents, highlighted, onDelete }: Um
 				})}
 			</div>
 
+			{/* Saved on blur rather than per keystroke */}
+			<div className="uma-card__notes-wrap">
+				<textarea
+					className={`uma-card__notes${overLimit ? ' uma-card__notes--over' : ''}`}
+					placeholder="Uma Notes"
+					rows={2}
+					value={notes}
+					onChange={e => setNotes(e.target.value)}
+					onBlur={() => { if (!overLimit && notes !== uma.notes) onNotesChange(uma.id, notes); }}
+				/>
+				{notes.length > NOTES_WARN_AT && (
+					<span className={`uma-card__notes-count${overLimit ? ' uma-card__notes-count--over' : ''}`}>
+						{overLimit ? 'Too long, not saved: ' : ''}{notes.length}/{NOTES_LIMIT}
+					</span>
+				)}
+			</div>
+
 			<footer className="uma-card__footer">
 				<span className="uma-card__parents" title={parentNames.join(' × ')}>
 					Parents: {parentNames.join(' × ')}
 				</span>
-				{uma.notes && <span className="uma-card__notes">{uma.notes}</span>}
 				<button className="uma-card__delete" onClick={() => onDelete(uma.id)}>Delete</button>
 			</footer>
 		</article>

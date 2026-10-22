@@ -312,71 +312,6 @@
 	white-space: nowrap;
 }
 
-/* Stats: 5 equal columns */
-.uma-card__stats {
-	display: grid;
-	grid-template-columns: repeat(5, 1fr);
-	text-align: center;
-	background: #171a21;
-	border-radius: 6px;
-	padding: 6px 0;
-}
-
-.uma-card__stat {
-	display: flex;
-	flex-direction: column;
-}
-
-.uma-card__stat-label {
-	font-size: 0.65rem;
-	color: var(--muted);
-	text-transform: capitalize;
-}
-
-.uma-card__stat-value {
-	font-size: 0.95rem;
-	font-weight: 600;
-}
-
-/* Aptitudes */
-.uma-card__grades {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	font-size: 0.75rem;
-}
-
-.uma-card__grade-row {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-
-.uma-card__grade-label {
-	width: 36px;
-	color: var(--muted);
-}
-
-.uma-card__grade {
-	display: flex;
-	align-items: center;
-	gap: 3px;
-}
-
-.uma-card__grade-key {
-	color: var(--muted);
-	text-transform: capitalize;
-}
-
-.grade {
-	font-weight: 700;
-	color: var(--muted);
-}
-
-.grade--S { color: #fbbf24; }
-.grade--A { color: #fb923c; }
-.grade--B { color: #f472b6; }
-
 /* Sparks */
 .uma-card__sparks {
 	display: flex;
@@ -420,7 +355,6 @@
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	margin-top: auto;
 	font-size: 0.7rem;
 	color: var(--muted);
 }
@@ -431,8 +365,47 @@
 	text-overflow: ellipsis;
 }
 
+/* Notes */
+/* margin-top: auto pins notes + footer to the card bottom, so they line up across a row */
+.uma-card__notes-wrap {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	margin-top: auto;
+	padding-top: 4px;
+}
+
 .uma-card__notes {
-	font-style: italic;
+	box-sizing: border-box;
+	min-height: calc(2lh + 14px); /* default 2-row size: 2 lines + padding + border */
+	padding: 6px 8px;
+	border-radius: 6px;
+	border: 1px solid var(--card-border);
+	background: #171a21;
+	color: var(--text);
+	font: inherit;
+	font-size: 0.75rem;
+	resize: vertical;
+}
+
+.uma-card__notes:focus {
+	outline: none;
+	border-color: var(--accent);
+}
+
+.uma-card__notes--over,
+.uma-card__notes--over:focus {
+	border-color: #ef4444;
+}
+
+.uma-card__notes-count {
+	align-self: flex-end;
+	font-size: 0.65rem;
+	color: var(--muted);
+}
+
+.uma-card__notes-count--over {
+	color: #ef4444;
 }
 
 .uma-card__delete {
