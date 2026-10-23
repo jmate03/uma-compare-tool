@@ -7,12 +7,15 @@ import './UmaListCSS.css'
 import { UmaCard } from '../components/UmaCard';
 import { SparkFilterBar } from '../components/SparkFilterBar';
 import { matchesSparkFilters, type SparkFilter } from '../lib/UmaFilter';
+import { SORT_OPTIONS, sortUmas, type SortDir, type SortKey } from '../lib/UmaSort';
 
 export function UmaList() {
 	const [umas, setUmas] = useState<StoredUma[]>([]);
 	const [search, setSearch] = useState('');
 	const [sparkFilters, setSparkFilters] = useState<SparkFilter[]>([]);
 	const [includeParents, setIncludeParents] = useState(true);
+	const [sortKey, setSortKey] = useState<SortKey>('recent');
+	const [sortDir, setSortDir] = useState<SortDir>('desc');
  
 	// Load saved umas once when the screen opens
 	useEffect(() => {
@@ -49,12 +52,16 @@ export function UmaList() {
 
 	// TODO: add more filters here (type, aptitudes...)
 	const visible = useMemo(
-		() => umas.filter(u =>
-			umaName(u).toLowerCase().includes(search.toLowerCase()) &&
-			matchesSparkFilters(u, sparkFilters, byId, includeParents)
+		() => sortUmas(
+			umas.filter(u =>
+				umaName(u).toLowerCase().includes(search.toLowerCase()) &&
+				matchesSparkFilters(u, sparkFilters, byId, includeParents)
+			),
+			sortKey, sortDir, byId, includeParents
 		),
-		[umas, search, sparkFilters, byId, includeParents]
+		[umas, search, sparkFilters, byId, includeParents, sortKey, sortDir]
 	);
+	const directional = SORT_OPTIONS.find(o => o.key === sortKey)!.directional;
  
 	return (
 		<div className="uma-list">
@@ -71,6 +78,27 @@ export function UmaList() {
 					onChange={e => setSearch(e.target.value)}
 				/>
  
+				<div className="uma-list__sort">
+					<select
+						className="uma-list__sort-select"
+						aria-label="Sort by"
+						value={sortKey}
+						onChange={e => setSortKey(e.target.value as SortKey)}
+					>
+						{SORT_OPTIONS.map(o => <option key={o.key} value={o.key}>Sort: {o.label}</option>)}
+					</select>
+					{directional && (
+						<button
+							className="uma-list__sort-dir"
+							type="button"
+							title={sortDir === 'desc' ? 'Descending (click for ascending)' : 'Ascending (click for descending)'}
+							onClick={() => setSortDir(d => (d === 'desc' ? 'asc' : 'desc'))}
+						>
+							{sortDir === 'desc' ? '↓' : '↑'}
+						</button>
+					)}
+				</div>
+
 				<label className="uma-list__import">
 					Import dump
 					<input

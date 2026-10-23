@@ -43,6 +43,30 @@
 	min-width: 240px;
 }
 
+.uma-list__sort {
+	display: flex;
+	gap: 4px;
+}
+
+.uma-list__sort-select,
+.uma-list__sort-dir {
+	padding: 8px 10px;
+	border-radius: 6px;
+	border: 1px solid var(--card-border);
+	background: var(--card);
+	color: var(--text);
+	font: inherit;
+}
+
+.uma-list__sort-dir {
+	min-width: 36px;
+	cursor: pointer;
+}
+
+.uma-list__sort-dir:hover {
+	border-color: var(--muted);
+}
+
 .uma-list__import {
 	background: var(--accent);
 	color: white;

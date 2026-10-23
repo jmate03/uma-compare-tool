@@ -24,6 +24,7 @@ export interface DumpUma {
 	factor_info_array: DumpFactor[];
 	succession_chara_array: DumpParent[];
 	memo: string;
+	icon_type: number;
 	create_time: string;
 }
 
@@ -103,6 +104,7 @@ export function importGameDump(raw: unknown, existing: StoredUma[]): StoredUma[]
 				{ kind: 'imported', sparks: [] },
 			],
 			score: d.rank_score,
+			iconType: d.icon_type,
 			createdAt: prev?.createdAt ?? d.create_time ?? now,
 			updatedAt: now,
 		};

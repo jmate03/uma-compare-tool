@@ -42,6 +42,7 @@ export const emptyValues: UmaFormValues = {
 export interface StoredUma extends UmaFormValues {
 	id: string;
 	gameId?: number; // trained_chara_id from the dump. undefined for manually entered umas
+	iconType?: number; // in-game favorite icon from the dump: 0 = none, 1–13 = icon
 	createdAt: string;
 	updatedAt: string;
     charId?: number;
