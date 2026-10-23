@@ -25,11 +25,12 @@ export function skillName(id: number): string {
 	return (skillNames as Record<string, string>)[id] ?? `#${id}`;
 }
 
-export type SkillRarity = 'white' | 'gold' | 'unique';
+export type SkillRarity = 'white' | 'gold' | 'unique' | 'inherited';
 
 // umaskillrarity.json (generated from uma-skill-tools' skill_data.json): 1 = white, 2 = gold, 3–5 = unique (by star level), 6 = evolved gold.
-// Inherited uniques (9xxxxx) are rarity 1, so they count as white.
+// Inherited uniques are rarity 1 like whites, but use the 9xxxxx range (900381 is the inherited copy of 100381).
 export function skillRarity(id: number): SkillRarity {
+	if (id >= 900000 && id < 1000000) return 'inherited';
 	const r = (skillRarities as Record<string, number>)[id] ?? 1;
 	return r >= 3 && r <= 5 ? 'unique' : r === 1 ? 'white' : 'gold';
 }

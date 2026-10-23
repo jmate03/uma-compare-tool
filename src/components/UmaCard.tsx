@@ -123,8 +123,8 @@ const APTITUDE_ROWS = [
 	{ label: 'Style', key: 'style', cols: [['front', 'Front'], ['pace', 'Pace'], ['late', 'Late'], ['end', 'End']] },
 ] as const;
 
-// Skill list order: uniques, then gold, then white (stable, so game order within each)
-const RARITY_ORDER: Record<SkillRarity, number> = { unique: 0, gold: 1, white: 2 };
+// Skill list order: uniques, then inherited uniques, then gold, then white (stable, so game order within each)
+const RARITY_ORDER: Record<SkillRarity, number> = { unique: 0, inherited: 1, gold: 2, white: 3 };
 
 function AceDetails({ uma }: { uma: StoredUma }) {
 	const skills = uma.skills

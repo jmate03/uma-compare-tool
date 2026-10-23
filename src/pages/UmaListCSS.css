@@ -537,6 +537,7 @@
 
 .skill--gold   { border-color: #fbbf24; background: #3a3424; }
 .skill--unique { border-color: #c084fc; background: #2f2640; }
+.skill--inherited { border-color: #f472b6; background: #3a2433; }
 
 .skill__level {
 	margin-left: 6px;
