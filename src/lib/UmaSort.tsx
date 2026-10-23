@@ -2,11 +2,12 @@
 import type { StoredUma } from './UmaTypes';
 import { sparkTotals } from './UmaFilter';
 
-export type SortKey = 'recent' | 'white' | 'icon' | 'notes';
+export type SortKey = 'recent' | 'rating' | 'white' | 'icon' | 'notes';
 export type SortDir = 'desc' | 'asc';
 
 export const SORT_OPTIONS: { key: SortKey; label: string; directional: boolean }[] = [
 	{ key: 'recent', label: 'Recently obtained', directional: true },
+	{ key: 'rating', label: 'Rating', directional: true },
 	{ key: 'white', label: 'No. of white sparks', directional: true },
 	{ key: 'icon', label: 'Favorite icon', directional: false },
 	{ key: 'notes', label: 'Has notes', directional: false },
@@ -39,6 +40,9 @@ export function sortUmas(
 	switch (key) {
 		case 'recent':
 			primary = (a, b) => sign * (obtainedAt(a) - obtainedAt(b));
+			break;
+		case 'rating':
+			primary = (a, b) => sign * ((a.score ?? 0) - (b.score ?? 0));
 			break;
 		case 'white': {
 			const counts = new Map(umas.map(u => [u.id, whiteCount(u, byId, includeParents)]));

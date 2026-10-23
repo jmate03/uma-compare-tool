@@ -21,7 +21,7 @@ export interface UmaFormValues {
     parents: [LegacyParent, LegacyParent];
     notes: string;
     score?: number;
-    // skills: string[]     // will handle this later focusing on parents for now
+    skills: Skill[];
 }
 
 export const emptyValues: UmaFormValues = {
@@ -36,7 +36,7 @@ export const emptyValues: UmaFormValues = {
     parents: [{ kind: 'saved', umaId: '' }, { kind: 'saved', umaId: '' }],
     notes: '',
     score: 0,
-    //skills: []
+    skills: [],
 };
 
 export interface StoredUma extends UmaFormValues {
@@ -53,4 +53,9 @@ export interface Spark {
     factorId: number;
     category: SparkCategory;
     stars: 1 | 2 | 3;
+}
+
+export interface Skill {
+    skillId: number; // matches the keys of umaskillnames.json
+    level: number; // only meaningful for unique skills (unique level)
 }

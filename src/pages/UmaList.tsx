@@ -4,13 +4,14 @@ import { importGameDump } from '../lib/UmaImport';
 import type { StoredUma } from '../lib/UmaTypes';
 import { umaName } from '../lib/UmaNames'
 import './UmaListCSS.css'
-import { UmaCard } from '../components/UmaCard';
+import { UmaCard, type CardMode } from '../components/UmaCard';
 import { SparkFilterBar } from '../components/SparkFilterBar';
 import { matchesSparkFilters, type SparkFilter } from '../lib/UmaFilter';
 import { SORT_OPTIONS, sortUmas, type SortDir, type SortKey } from '../lib/UmaSort';
 
 export function UmaList() {
 	const [umas, setUmas] = useState<StoredUma[]>([]);
+	const [mode, setMode] = useState<CardMode>('parent');
 	const [search, setSearch] = useState('');
 	const [sparkFilters, setSparkFilters] = useState<SparkFilter[]>([]);
 	const [includeParents, setIncludeParents] = useState(true);
@@ -51,15 +52,16 @@ export function UmaList() {
 	const highlighted = useMemo(() => new Set(sparkFilters.flatMap(f => (f.base === null ? [] : [f.base]))), [sparkFilters]);
 
 	// TODO: add more filters here (type, aptitudes...)
+	// Spark filters are parent-mode only. They're kept, but not applied, while in ace mode.
 	const visible = useMemo(
 		() => sortUmas(
 			umas.filter(u =>
 				umaName(u).toLowerCase().includes(search.toLowerCase()) &&
-				matchesSparkFilters(u, sparkFilters, byId, includeParents)
+				(mode === 'ace' || matchesSparkFilters(u, sparkFilters, byId, includeParents))
 			),
 			sortKey, sortDir, byId, includeParents
 		),
-		[umas, search, sparkFilters, byId, includeParents, sortKey, sortDir]
+		[umas, search, sparkFilters, byId, includeParents, sortKey, sortDir, mode]
 	);
 	const directional = SORT_OPTIONS.find(o => o.key === sortKey)!.directional;
  
@@ -69,6 +71,20 @@ export function UmaList() {
 				<h1 className="uma-list__title">
 					uma-compare-tool <span className="uma-list__count">{visible.length}</span>
 				</h1>
+
+				<div className="uma-list__mode" role="group" aria-label="Mode">
+					{(['parent', 'ace'] as const).map(m => (
+						<button
+							key={m}
+							type="button"
+							className={`uma-list__mode-btn${mode === m ? ' uma-list__mode-btn--active' : ''}`}
+							aria-pressed={mode === m}
+							onClick={() => setMode(m)}
+						>
+							{m === 'parent' ? 'Parent' : 'Ace'}
+						</button>
+					))}
+				</div>
  
 				<input
 					className="uma-list__search"
@@ -123,12 +139,14 @@ export function UmaList() {
 				</button>
 			</header>
 
-			<SparkFilterBar
-				filters={sparkFilters}
-				onChange={setSparkFilters}
-				includeParents={includeParents}
-				onIncludeParentsChange={setIncludeParents}
-			/>
+			{mode === 'parent' && (
+				<SparkFilterBar
+					filters={sparkFilters}
+					onChange={setSparkFilters}
+					includeParents={includeParents}
+					onIncludeParentsChange={setIncludeParents}
+				/>
+			)}
 
 			{visible.length === 0 ? (
 				<p className="uma-list__empty">
@@ -137,7 +155,7 @@ export function UmaList() {
 			) : (
 				<div className="uma-list__grid">
 					{visible.map(uma => (
-						<UmaCard key={uma.id} uma={uma} byId={byId} includeParents={includeParents} highlighted={highlighted} onNotesChange={handleNotesChange} onDelete={handleDelete} />
+						<UmaCard key={uma.id} uma={uma} mode={mode} byId={byId} includeParents={includeParents} highlighted={highlighted} onNotesChange={handleNotesChange} onDelete={handleDelete} />
 					))}
 				</div>
 			)}

@@ -22,6 +22,7 @@ export interface DumpUma {
 	proper_running_style_nige: number; proper_running_style_senko: number;
 	proper_running_style_sashi: number; proper_running_style_oikomi: number;
 	factor_info_array: DumpFactor[];
+	skill_array: { skill_id: number; level: number }[];
 	succession_chara_array: DumpParent[];
 	memo: string;
 	icon_type: number;
@@ -99,6 +100,7 @@ export function importGameDump(raw: unknown, existing: StoredUma[]): StoredUma[]
 				late: grade(d.proper_running_style_sashi), end: grade(d.proper_running_style_oikomi),
 			},
 			sparks: d.factor_info_array.map(toSpark),
+			skills: (d.skill_array ?? []).map(s => ({ skillId: s.skill_id, level: s.level })),
 			parents: prev?.parents ?? [
 				{ kind: 'imported', sparks: [] },
 				{ kind: 'imported', sparks: [] },

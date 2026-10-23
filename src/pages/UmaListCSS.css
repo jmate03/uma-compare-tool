@@ -34,6 +34,37 @@
 	margin-left: 4px;
 }
 
+.uma-list__mode {
+	display: flex;
+	border: 1px solid var(--card-border);
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.uma-list__mode-btn {
+	padding: 8px 14px;
+	border: none;
+	background: var(--card);
+	color: var(--muted);
+	font: inherit;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.uma-list__mode-btn + .uma-list__mode-btn {
+	border-left: 1px solid var(--card-border);
+}
+
+.uma-list__mode-btn:hover {
+	color: var(--text);
+}
+
+.uma-list__mode-btn--active,
+.uma-list__mode-btn--active:hover {
+	background: var(--accent);
+	color: white;
+}
+
 .uma-list__search {
 	padding: 8px 12px;
 	border-radius: 6px;
@@ -314,6 +345,10 @@
 	background: var(--card);
 	border: 1px solid var(--card-border);
 	border-radius: 10px;
+	/* Off-screen cards skip layout and paint. The 280px is a placeholder height
+	   until a card first renders; "auto" then remembers its real height. */
+	content-visibility: auto;
+	contain-intrinsic-block-size: auto 280px;
 }
 
 .uma-card__header {
@@ -404,6 +439,108 @@
 .spark__own-count,
 .spark > .spark__own {
 	opacity: 0.8;
+}
+
+/* Ace mode: stats */
+.uma-card__stats {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	gap: 4px;
+}
+
+.uma-card__stat {
+	--stat: #d1d5db;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 4px 0;
+	border-radius: 4px;
+	border-top: 3px solid var(--stat);
+	background: #262a34;
+}
+
+.uma-card__stat--speed   { --stat: #3b82f6; }
+.uma-card__stat--stamina { --stat: #ef4444; }
+.uma-card__stat--power   { --stat: #f59e0b; }
+.uma-card__stat--guts    { --stat: #ec4899; }
+.uma-card__stat--wit     { --stat: #22c55e; }
+
+.uma-card__stat-label {
+	font-size: 0.6rem;
+	color: var(--muted);
+}
+
+.uma-card__stat-value {
+	font-size: 0.85rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Ace mode: aptitudes */
+.uma-card__aptitudes {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	font-size: 0.7rem;
+}
+
+.uma-card__apt-row {
+	display: grid;
+	grid-template-columns: 52px repeat(4, 1fr);
+	gap: 4px;
+}
+
+.uma-card__apt-label {
+	color: var(--muted);
+}
+
+.uma-card__apt {
+	display: flex;
+	justify-content: space-between;
+	padding: 1px 6px;
+	border-radius: 4px;
+	background: #262a34;
+}
+
+.grade {
+	font-weight: 700;
+}
+
+.grade--S { color: #fbbf24; }
+.grade--A { color: #f97316; }
+.grade--B { color: #ec4899; }
+.grade--C { color: #22c55e; }
+.grade--D { color: #3b82f6; }
+.grade--E { color: #a855f7; }
+.grade--F,
+.grade--G { color: var(--muted); }
+
+/* Ace mode: skills */
+.uma-card__skills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.uma-card__skills-empty {
+	font-size: 0.7rem;
+	color: var(--muted);
+}
+
+.skill {
+	font-size: 0.7rem;
+	padding: 2px 6px;
+	border-radius: 4px;
+	border-left: 3px solid #d1d5db;
+	background: #262a34;
+}
+
+.skill--gold   { border-color: #fbbf24; background: #3a3424; }
+.skill--unique { border-color: #c084fc; background: #2f2640; }
+
+.skill__level {
+	margin-left: 6px;
+	opacity: 0.7;
 }
 
 /* Footer */
