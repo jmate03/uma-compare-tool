@@ -294,15 +294,36 @@
 
 .uma-card__header {
 	display: flex;
-	justify-content: space-between;
-	align-items: flex-start;
-	gap: 8px;
+	align-items: center;
+	gap: 10px;
+}
+
+.uma-card__portrait {
+	flex-shrink: 0;
+	width:56px;
+	height: 56px;
+	border-radius: 8px;
+	background: var(--card-border);
+	object-fit: cover;
 }
 
 .uma-card__name {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
 	margin: 0;
-	font-size: 0.95rem;
-	line-height: 1.3;
+	font-size: 0.85rem;
+	line-height: 1.25;
+}
+
+.uma-card__outfit {
+	font-size: 0.7rem;
+	font-weight: 400;
+	opacity: 0.65;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .uma-card__score {
@@ -310,6 +331,7 @@
 	font-weight: 600;
 	color: #fbbf24;
 	white-space: nowrap;
+	align-self: flex-start;
 }
 
 /* Sparks */
@@ -344,10 +366,20 @@
 
 /* Marks a spark the uma itself has (vs only inherited from parents) */
 .spark__own {
-	color: var(--accent);
 	font-size: 0.6rem;
 	margin-right: 4px;
 	vertical-align: 1px;
+}
+
+.spark__own-count {
+	margin-left: 6px;
+	white-space: nowrap;
+}
+
+/* Same fade for the trailing own count and green's leading marker */
+.spark__own-count,
+.spark > .spark__own {
+	opacity: 0.8;
 }
 
 /* Footer */

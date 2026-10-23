@@ -66,7 +66,7 @@ export function UmaList() {
 				<input
 					className="uma-list__search"
 					type="search"
-					placeholder="Search by name or outfit"
+					placeholder="Search by name"
 					value={search}
 					onChange={e => setSearch(e.target.value)}
 				/>

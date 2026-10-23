@@ -17,3 +17,10 @@ export const SPARK_NAMES = new Map(
 export function sparkName(base: number): string {
 	return SPARK_NAMES.get(base) ?? `#${base}`;
 }
+
+// Portrait in public/icons. Files are chara_stand_{charaId}_{variantId}.png,
+// where the character ID is the card ID without its last two digits.
+export function umaIconUrl(u: { variantId?: number }): string | undefined {
+	if (u.variantId === undefined) return undefined;
+	return `${import.meta.env.BASE_URL}icons/chara_stand_${Math.floor(u.variantId / 100)}_${u.variantId}.png`;
+}

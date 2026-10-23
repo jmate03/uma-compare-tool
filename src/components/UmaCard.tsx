@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { StoredUma } from '../lib/UmaTypes';
-import { sparkName, umaName } from '../lib/UmaNames';
+import { sparkName, umaIconUrl, umaName } from '../lib/UmaNames';
 import { sparkTotals } from '../lib/UmaFilter';
 
 // Typing past the cap is allowed, but notes over it aren't saved until trimmed
@@ -22,6 +22,11 @@ export function UmaCard({ uma, byId, includeParents, highlighted, onNotesChange,
 	const [notes, setNotes] = useState(uma.notes);
 	const overLimit = notes.length > NOTES_LIMIT;
 
+	// Names look like "[Outfit] Character"; the outfit goes on its own smaller line
+	const fullName = umaName(uma);
+	const [, outfit, charaName] = fullName.match(/^\[(.*?)\]\s*(.*)$/) ?? [null, null, fullName];
+	const iconUrl = umaIconUrl(uma);
+
 	const parentNames = uma.parents.map(p =>
 		p.kind === 'saved' ? umaName(byId.get(p.umaId) ?? {}) : umaName(p)
 	);
@@ -29,7 +34,18 @@ export function UmaCard({ uma, byId, includeParents, highlighted, onNotesChange,
 	return (
 		<article className="uma-card">
 			<header className="uma-card__header">
-				<h2 className="uma-card__name">{umaName(uma)}</h2>
+				{iconUrl && (
+					<img
+						className="uma-card__portrait"
+						src={iconUrl}
+						alt=""
+						onError={e => { e.currentTarget.style.display = 'none'; }}
+					/>
+				)}
+				<h2 className="uma-card__name" title={fullName}>
+					{outfit && <span className="uma-card__outfit">{outfit}</span>}
+					{charaName}
+				</h2>
 				{uma.score !== undefined && <span className="uma-card__score">{uma.score.toLocaleString()}</span>}
 			</header>
 
@@ -43,8 +59,14 @@ export function UmaCard({ uma, byId, includeParents, highlighted, onNotesChange,
 							className={className}
 							title={s.own ? `${s.own}★ on this uma, ${s.total - s.own}★ from parents` : 'From parents only'}
 						>
-							{s.own > 0 && <span className="spark__own" aria-label="On this uma">●</span>}
+							{/* Green sparks are one per uma, so a plain marker is enough; others show the uma's own count */}
+							{s.own > 0 && s.category === 'green' && <span className="spark__own" aria-label="On this uma">●</span>}
 							<span className="spark__stars">{s.total} ★</span> {name}
+							{s.own > 0 && s.category !== 'green' && (
+								<span className="spark__own-count" aria-label={`${s.own} stars on this uma`}>
+									<span className="spark__own">●</span>{s.own} ★
+								</span>
+							)}
 						</span>
 					) : (
 						<span key={s.base} className={className}>

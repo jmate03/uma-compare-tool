@@ -27,4 +27,7 @@ Built with React + Vite, written in Typescript
 
 ## Acknowledgements
 Majority of skill/spark/uma data comes from [hachimi-tl-en](https://github.com/UmaTL/hachimi-tl-en)  
-The code for [ocr](src/ocr/ocr.ts) and the [trained data](public/vendor/tesseract/traineddata/eng.traineddata.gz) were adapted from [uma-tools](https://github.com/alpha123/uma-tools), and [skill data](data) taken from [uma-skill-tools](https://github.com/alpha123/uma-skill-tools), both by [alpha123](https://github.com/alpha123)
+The code for [ocr](src/ocr/ocr.ts) and the [trained data](public/vendor/tesseract/traineddata/eng.traineddata.gz) were adapted from [uma-tools](https://github.com/alpha123/uma-tools), and [skill data](data) taken from [uma-skill-tools](https://github.com/alpha123/uma-skill-tools), both by [alpha123](https://github.com/alpha123)  
+Character icons are from [gametora](https://gametora.com/umamusume/characters)  
+
+Umamusume: Pretty Derby and all related materials are © Cygames, Inc. This is an unofficial fan tool and is not affiliated with or endorsed by Cygames.
