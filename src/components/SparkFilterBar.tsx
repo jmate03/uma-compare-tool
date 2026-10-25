@@ -1,5 +1,5 @@
 // Collapsible panel of spark filters, one section per category, e.g. "Power ≥ 7★" + "Sprint Corners ≥ 1★"
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { CATEGORY_ORDER, SPARK_OPTIONS_BY_CATEGORY, sparkByBase, type SparkFilter } from '../lib/UmaFilter';
 import type { SparkCategory } from '../lib/UmaTypes';
 
@@ -28,7 +28,7 @@ export function SparkFilterBar({ filters, onChange, includeParents, onIncludePar
 		onChange(filters.map(f => (f.id === id ? { ...f, ...changes } : f)));
 	const remove = (id: string) => onChange(filters.filter(f => f.id !== id));
 	const add = (category: SparkCategory) =>
-		onChange([...filters, { id: crypto.randomUUID(), category, base: null, minStars: 1 }]);
+		onChange([...filters, { id: crypto.randomUUID(), category, base: null, minStars: 1, join: 'and' }]);
 
 	function toggleParents(value: boolean) {
 		onIncludeParentsChange(value);
@@ -65,14 +65,16 @@ export function SparkFilterBar({ filters, onChange, includeParents, onIncludePar
 								)}
 							</h3>
 
-							{rows.map(f => (
-								<SparkFilterRow
-									key={f.id}
-									filter={f}
-									maxStars={maxStars}
-									onChange={changes => update(f.id, changes)}
-									onRemove={() => remove(f.id)}
-								/>
+							{rows.map((f, i) => (
+								<Fragment key={f.id}>
+									{i > 0 && <JoinToggle join={f.join} onChange={join => update(f.id, { join })} />}
+									<SparkFilterRow
+										filter={f}
+										maxStars={maxStars}
+										onChange={changes => update(f.id, changes)}
+										onRemove={() => remove(f.id)}
+									/>
+								</Fragment>
 							))}
 
 							<button type="button" className="spark-filter__add" onClick={() => add(category)}>
@@ -89,6 +91,30 @@ export function SparkFilterBar({ filters, onChange, includeParents, onIncludePar
 				})}
 			</div>
 		</details>
+	);
+}
+
+interface JoinToggleProps {
+	join: SparkFilter['join'];
+	onChange: (join: SparkFilter['join']) => void;
+}
+
+// AND/OR switch between two filters in a section; it belongs to the filter below it
+function JoinToggle({ join, onChange }: JoinToggleProps) {
+	return (
+		<div className="spark-filter__join" role="group" aria-label="Combine with previous filter">
+			{(['and', 'or'] as const).map(j => (
+				<button
+					key={j}
+					type="button"
+					className={`spark-filter__join-btn${join === j ? ' spark-filter__join-btn--active' : ''}`}
+					aria-pressed={join === j}
+					onClick={() => onChange(j)}
+				>
+					{j.toUpperCase()}
+				</button>
+			))}
+		</div>
 	);
 }
 

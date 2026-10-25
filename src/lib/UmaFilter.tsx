@@ -34,6 +34,9 @@ export interface SparkFilter {
 	category: SparkCategory;
 	base: number | null; // null = any spark of this category
 	minStars: number;
+	// How this filter combines with the one before it in the same category.
+	// Ignored on a category's first filter.
+	join: 'and' | 'or';
 }
 
 export interface SparkTotal {
@@ -68,7 +71,9 @@ export function sparkTotals(uma: StoredUma, byId: Map<string, StoredUma>, includ
 	);
 }
 
-// All filters must match (AND). An "any" filter matches if some spark of its category is high enough.
+// Within a category, filters combine in order using their joins, with AND binding tighter than OR:
+// "A or B and C" means "A or (B and C)". Categories are then ANDed together.
+// An "any" filter matches if some spark of its category is high enough.
 export function matchesSparkFilters(
 	uma: StoredUma,
 	filters: SparkFilter[],
@@ -78,9 +83,20 @@ export function matchesSparkFilters(
 	if (filters.length === 0) return true;
 	const totals = sparkTotals(uma, byId, includeParents);
 	const byBase = new Map(totals.map(t => [t.base, t.total]));
-	return filters.every(f =>
+	const matches = (f: SparkFilter) =>
 		f.base === null
 			? totals.some(t => t.category === f.category && t.total >= f.minStars)
-			: (byBase.get(f.base) ?? 0) >= f.minStars
-	);
+			: (byBase.get(f.base) ?? 0) >= f.minStars;
+
+	return CATEGORY_ORDER.every(category => {
+		const rows = filters.filter(f => f.category === category);
+		if (rows.length === 0) return true;
+		// Split into OR-separated groups; one group must match in full
+		const groups: SparkFilter[][] = [];
+		rows.forEach((f, i) => {
+			if (i === 0 || f.join === 'or') groups.push([f]);
+			else groups[groups.length - 1].push(f);
+		});
+		return groups.some(g => g.every(matches));
+	});
 }
