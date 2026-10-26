@@ -358,6 +358,23 @@
 	padding: 48px 0;
 }
 
+/* Opens the help overlay; a button styled as a link */
+.uma-list__empty-link {
+	display: block;
+	margin: 8px auto 0;
+	padding: 0;
+	border: none;
+	background: none;
+	color: #60a5fa;
+	font: inherit;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.uma-list__empty-link:hover {
+	color: #93c5fd;
+}
+
 /* As many 300px+ columns as fit */
 .uma-list__grid {
 	display: grid;
@@ -867,4 +884,122 @@ body:has(.compare[open]) {
 /* Cards here are all on screen, so skip the list's off-screen placeholder */
 .compare__columns .uma-card {
 	content-visibility: visible;
+}
+
+/* ---------- Help overlay ---------- */
+
+.uma-list__help {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	border: 1px solid var(--card-border);
+	background: var(--card);
+	color: var(--muted);
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.uma-list__help:hover {
+	color: var(--text);
+	border-color: var(--muted);
+}
+
+body:has(.help[open]) {
+	overflow: hidden;
+}
+
+.help {
+	width: min(100vw - 32px, 760px);
+	max-width: none;
+	max-height: calc(100vh - 32px);
+	padding: 0;
+	border: 1px solid var(--card-border);
+	border-radius: 12px;
+	background: var(--bg);
+	color: var(--text);
+}
+
+.help::backdrop {
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.help__panel {
+	position: relative;
+	padding: 24px 28px;
+}
+
+.help__close {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+}
+
+/* Rendered markdown; index.css zeroes heading and paragraph margins, so restore them here */
+.help__content {
+	font-size: 0.8rem;
+	line-height: 1.6;
+}
+
+.help__content h1 {
+	font-size: 1.4rem;
+	margin: 0 32px 16px 0;
+}
+
+.help__content h2 {
+	font-size: 1.1rem;
+	margin: 24px 0 8px;
+	padding-bottom: 4px;
+	border-bottom: 1px solid var(--card-border);
+}
+
+.help__content h3 {
+	font-size: 0.95rem;
+	margin: 16px 0 6px;
+}
+
+.help__content p,
+.help__content ul,
+.help__content ol,
+.help__content table {
+	margin: 0 0 12px;
+}
+
+.help__content ul,
+.help__content ol {
+	padding-left: 24px;
+}
+
+.help__content a {
+	color: #60a5fa;
+}
+
+.help__content code {
+	padding: 1px 5px;
+	border-radius: 4px;
+	background: var(--card);
+	font-size: 0.9em;
+}
+
+.help__content img {
+	max-width: 100%;
+	border-radius: 6px;
+}
+
+.help__content table {
+	border-collapse: collapse;
+}
+
+.help__content th,
+.help__content td {
+	padding: 6px 10px;
+	border: 1px solid var(--card-border);
+	text-align: left;
+}
+
+.help__content blockquote {
+	margin: 0 0 12px;
+	padding: 4px 12px;
+	border-left: 3px solid var(--accent);
+	color: var(--muted);
 }

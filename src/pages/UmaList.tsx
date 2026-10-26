@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { umaStore } from '../lib/UmaStorage';
 import { importGameDump } from '../lib/UmaImport';
 import type { StoredUma } from '../lib/UmaTypes';
@@ -9,6 +9,9 @@ import { CompareOverlay } from '../components/CompareOverlay';
 import { SparkFilterBar } from '../components/SparkFilterBar';
 import { matchesSparkFilters, type SparkFilter } from '../lib/UmaFilter';
 import { SORT_OPTIONS, sortUmas, type SortDir, type SortKey } from '../lib/UmaSort';
+
+// Loaded on first open so the markdown renderer stays out of the main bundle
+const HelpOverlay = lazy(() => import('../components/HelpOverlay'));
 
 export function UmaList() {
 	const [umas, setUmas] = useState<StoredUma[]>([]);
@@ -21,7 +24,8 @@ export function UmaList() {
 	const [sortDir, setSortDir] = useState<SortDir>('desc');
 	const [compareIds, setCompareIds] = useState<string[]>([]); // in the order they were picked
 	const [comparing, setComparing] = useState(false);
- 
+	const [helpOpen, setHelpOpen] = useState(false);
+
 	// Load saved umas once when the screen opens
 	useEffect(() => {
 		umaStore.list().then(setUmas);
@@ -154,6 +158,16 @@ export function UmaList() {
 				>
 					Clear all
 				</button>
+
+				<button
+					className="uma-list__help"
+					type="button"
+					aria-label="How to use"
+					title="How to use"
+					onClick={() => setHelpOpen(true)}
+				>
+					?
+				</button>
 			</header>
 
 			{mode === 'parent' && (
@@ -169,7 +183,14 @@ export function UmaList() {
 
 			{visible.length === 0 ? (
 				<p className="uma-list__empty">
-					{umas.length === 0 ? 'No umas yet. Import trained_chara_data.json to get started.' : 'No umas match your search and filters.'}
+					{umas.length === 0 ? (
+						<>
+							No umas yet. Import your trained_chara_data.json to get started.{' '}
+							<button className="uma-list__empty-link" type="button" onClick={() => setHelpOpen(true)}>
+								New here? Read the guide
+							</button>
+						</>
+					) : 'No umas match your search and filters.'}
 				</p>
 			) : (
 				<div className="uma-list__grid">
@@ -221,6 +242,12 @@ export function UmaList() {
 					onRemove={toggleCompare}
 					onClose={() => setComparing(false)}
 				/>
+			)}
+
+			{helpOpen && (
+				<Suspense>
+					<HelpOverlay onClose={() => setHelpOpen(false)} />
+				</Suspense>
 			)}
 		</div>
 	);
