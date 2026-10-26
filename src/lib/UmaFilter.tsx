@@ -7,6 +7,11 @@ import { SPARK_NAMES } from './UmaNames';
 // so 2009701/2009702/2009703 are all "Sprint Corners" (base 200970).
 export const sparkBase = (factorId: number) => Math.floor(factorId / 10);
 
+// Race and scenario sparks are white sparks that don't give a skill (see UmaImport's ID notes).
+// Takes a base, so the ranges are a tenth of the factor ID ranges.
+export const isRaceOrScenarioSpark = (base: number) =>
+	(base >= 100_000 && base < 200_000) || (base >= 300_000 && base < 400_000);
+
 export interface SparkOption {
 	base: number;
 	name: string;

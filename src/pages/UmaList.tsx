@@ -4,7 +4,8 @@ import { importGameDump } from '../lib/UmaImport';
 import type { StoredUma } from '../lib/UmaTypes';
 import { umaName } from '../lib/UmaNames'
 import './UmaListCSS.css'
-import { UmaCard, type CardMode } from '../components/UmaCard';
+import { COMPARE_LIMIT, UmaCard, type CardMode } from '../components/UmaCard';
+import { CompareOverlay } from '../components/CompareOverlay';
 import { SparkFilterBar } from '../components/SparkFilterBar';
 import { matchesSparkFilters, type SparkFilter } from '../lib/UmaFilter';
 import { SORT_OPTIONS, sortUmas, type SortDir, type SortKey } from '../lib/UmaSort';
@@ -15,8 +16,11 @@ export function UmaList() {
 	const [search, setSearch] = useState('');
 	const [sparkFilters, setSparkFilters] = useState<SparkFilter[]>([]);
 	const [includeParents, setIncludeParents] = useState(true);
+	const [hideRaceScenario, setHideRaceScenario] = useState(false);
 	const [sortKey, setSortKey] = useState<SortKey>('recent');
 	const [sortDir, setSortDir] = useState<SortDir>('desc');
+	const [compareIds, setCompareIds] = useState<string[]>([]); // in the order they were picked
+	const [comparing, setComparing] = useState(false);
  
 	// Load saved umas once when the screen opens
 	useEffect(() => {
@@ -33,11 +37,21 @@ export function UmaList() {
 		if (!confirm(`Delete all ${umas.length} umas? This also removes your notes and types, and can't be undone.`)) return;
 		await umaStore.clear();
 		setUmas([]);
+		setCompareIds([]);
 	}
  
 	async function handleDelete(id: string) {
 		await umaStore.remove(id);
 		setUmas(await umaStore.list());
+		setCompareIds(prev => prev.filter(c => c !== id));
+	}
+
+	function toggleCompare(id: string) {
+		setCompareIds(prev => (
+			prev.includes(id) ? prev.filter(c => c !== id)
+			: prev.length < COMPARE_LIMIT ? [...prev, id]
+			: prev
+		));
 	}
  
 	async function handleNotesChange(id: string, notes: string) {
@@ -63,6 +77,9 @@ export function UmaList() {
 		),
 		[umas, search, sparkFilters, byId, includeParents, sortKey, sortDir, mode]
 	);
+	// Selected umas stay selected even when filtered out of the grid
+	const compareUmas = compareIds.flatMap(id => byId.get(id) ?? []);
+	const compareFull = compareIds.length >= COMPARE_LIMIT;
 	const directional = SORT_OPTIONS.find(o => o.key === sortKey)!.directional;
  
 	return (
@@ -145,6 +162,8 @@ export function UmaList() {
 					onChange={setSparkFilters}
 					includeParents={includeParents}
 					onIncludeParentsChange={setIncludeParents}
+					hideRaceScenario={hideRaceScenario}
+					onHideRaceScenarioChange={setHideRaceScenario}
 				/>
 			)}
 
@@ -155,9 +174,53 @@ export function UmaList() {
 			) : (
 				<div className="uma-list__grid">
 					{visible.map(uma => (
-						<UmaCard key={uma.id} uma={uma} mode={mode} byId={byId} includeParents={includeParents} highlighted={highlighted} onNotesChange={handleNotesChange} onDelete={handleDelete} />
+						<UmaCard
+							key={uma.id}
+							uma={uma}
+							mode={mode}
+							byId={byId}
+							includeParents={includeParents}
+							hideRaceScenario={hideRaceScenario}
+							highlighted={highlighted}
+							onNotesChange={handleNotesChange}
+							onDelete={handleDelete}
+							selected={compareIds.includes(uma.id)}
+							selectDisabled={compareFull && !compareIds.includes(uma.id)}
+							onToggleSelect={toggleCompare}
+						/>
 					))}
 				</div>
+			)}
+
+			{compareUmas.length >= 2 && (
+				<div className="compare-bar" role="region" aria-label="Comparison">
+					<span className="compare-bar__hint">
+						{compareFull ? `Max ${COMPARE_LIMIT} selected` : `Select up to ${COMPARE_LIMIT}`}
+					</span>
+					<button className="compare-bar__clear" type="button" onClick={() => setCompareIds([])}>
+						Clear selections
+					</button>
+					<button className="compare-bar__go" type="button" onClick={() => setComparing(true)}>
+						Compare ({compareUmas.length})
+					</button>
+				</div>
+			)}
+
+			{/* Closes on its own if unchecking leaves fewer than two */}
+			{comparing && compareUmas.length >= 2 && (
+				<CompareOverlay
+					umas={compareUmas}
+					mode={mode}
+					onModeChange={setMode}
+					byId={byId}
+					includeParents={includeParents}
+					hideRaceScenario={hideRaceScenario}
+					onHideRaceScenarioChange={setHideRaceScenario}
+					highlighted={highlighted}
+					onNotesChange={handleNotesChange}
+					onRemove={toggleCompare}
+					onClose={() => setComparing(false)}
+				/>
 			)}
 		</div>
 	);

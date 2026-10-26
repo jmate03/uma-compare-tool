@@ -453,6 +453,24 @@
 	background: #3a3424;
 }
 
+/* Compare view: highest stars among the umas sharing this spark */
+.spark--best {
+	background: #1f3a2a;
+}
+
+.spark--best .spark__stars {
+	color: #4ade80;
+	font-weight: 600;
+}
+
+/* Compare view: stars behind the best uma for this spark */
+.spark__diff {
+	margin-left: 6px;
+	color: #f87171;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
 /* Marks a spark the uma itself has (vs only inherited from parents) */
 .spark__own {
 	font-size: 0.6rem;
@@ -574,6 +592,12 @@
 	opacity: 0.7;
 }
 
+/* Picked for comparison (only marked in the grid; every overlay card is selected) */
+.uma-list__grid .uma-card--selected {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 1px var(--accent);
+}
+
 /* Footer */
 .uma-card__footer {
 	display: flex;
@@ -633,7 +657,7 @@
 }
 
 .uma-card__delete {
-	align-self: flex-end;
+	margin-left: auto;
 	background: none;
 	border: 1px solid var(--card-border);
 	color: var(--muted);
@@ -646,4 +670,201 @@
 .uma-card__delete:hover {
 	border-color: #ef4444;
 	color: #ef4444;
+}
+
+.uma-card__actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Bordered like the Delete button so the whole label reads as clickable */
+.uma-card__compare {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	border: 1px solid var(--card-border);
+	border-radius: 4px;
+	padding: 2px 8px;
+	cursor: pointer;
+	user-select: none;
+}
+
+.uma-card__compare:hover:not(:has(input:disabled)),
+.uma-card__compare:has(input:checked) {
+	border-color: var(--accent);
+	color: var(--text);
+}
+
+.uma-card__compare input {
+	margin: 0;
+	accent-color: var(--accent);
+}
+
+.uma-card__compare:has(input:disabled) {
+	opacity: 0.4;
+	cursor: default;
+}
+
+/* ---------- Compare ---------- */
+
+/* Sits at the end of the list, so it sticks to the bottom of the viewport while scrolling */
+.compare-bar {
+	position: sticky;
+	bottom: 16px;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	width: fit-content;
+	margin: 20px auto 0;
+	padding: 10px 14px;
+	background: var(--card);
+	border: 1px solid var(--card-border);
+	border-radius: 10px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.compare-bar__hint {
+	font-size: 0.75rem;
+	color: var(--muted);
+}
+
+.compare-bar__clear {
+	background: none;
+	border: 1px solid var(--card-border);
+	color: var(--muted);
+	padding: 7px 12px;
+	border-radius: 6px;
+	font: inherit;
+	cursor: pointer;
+}
+
+.compare-bar__clear:hover {
+	border-color: var(--muted);
+	color: var(--text);
+}
+
+.compare-bar__go {
+	background: var(--accent);
+	color: white;
+	border: none;
+	padding: 8px 14px;
+	border-radius: 6px;
+	font: inherit;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.compare-bar__go:hover {
+	background: #1d4ed8;
+}
+
+/* Keep the page behind the overlay from scrolling */
+body:has(.compare[open]) {
+	overflow: hidden;
+}
+
+.compare {
+	width: min(100vw - 32px, 1400px);
+	max-width: none;
+	max-height: calc(100vh - 32px);
+	padding: 0;
+	border: 1px solid var(--card-border);
+	border-radius: 12px;
+	background: var(--bg);
+	color: var(--text);
+}
+
+.compare::backdrop {
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.compare__panel {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 16px;
+}
+
+.compare__header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.compare__title {
+	margin: 0 auto 0 0;
+	font-size: 1.1rem;
+}
+
+.compare__close {
+	background: none;
+	border: none;
+	color: var(--muted);
+	font-size: 1.5rem;
+	line-height: 1;
+	padding: 0 4px;
+	cursor: pointer;
+}
+
+.compare__close:hover {
+	color: var(--text);
+}
+
+/* One column per uma; scrolls sideways when they don't fit */
+.compare__columns {
+	display: grid;
+	grid-template-columns: repeat(var(--cols), minmax(280px, 1fr));
+	gap: 16px;
+	overflow-x: auto;
+}
+
+/* Entries every compared uma has (lib/UmaCompare) */
+.uma-card__shared {
+	padding-top: 8px;
+	border-top: 1px dashed var(--card-border);
+}
+
+.uma-card__shared-summary {
+	font-size: 0.7rem;
+	color: var(--muted);
+	cursor: pointer;
+	user-select: none;
+}
+
+.uma-card__shared-summary:hover {
+	color: var(--text);
+}
+
+/* Faded so the differences above stand out */
+.uma-card__shared[open] > div {
+	margin-top: 6px;
+	opacity: 0.6;
+}
+
+/* Hidden race/scenario sparks, set apart from the shared ones */
+.uma-card__shared[open] > div + .uma-card__hidden-group {
+	padding-top: 6px;
+	border-top: 1px dashed var(--card-border);
+}
+
+.compare__split {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.85rem;
+	color: var(--muted);
+	cursor: pointer;
+	user-select: none;
+}
+
+.compare__split input {
+	margin: 0;
+	accent-color: var(--accent);
+}
+
+/* Cards here are all on screen, so skip the list's off-screen placeholder */
+.compare__columns .uma-card {
+	content-visibility: visible;
 }

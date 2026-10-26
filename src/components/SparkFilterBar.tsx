@@ -18,9 +18,11 @@ interface SparkFilterBarProps {
 	onChange: (filters: SparkFilter[]) => void;
 	includeParents: boolean;
 	onIncludeParentsChange: (value: boolean) => void;
+	hideRaceScenario: boolean;
+	onHideRaceScenarioChange: (value: boolean) => void;
 }
 
-export function SparkFilterBar({ filters, onChange, includeParents, onIncludeParentsChange }: SparkFilterBarProps) {
+export function SparkFilterBar({ filters, onChange, includeParents, onIncludeParentsChange, hideRaceScenario, onHideRaceScenarioChange }: SparkFilterBarProps) {
 	const [open, setOpen] = useState(true);
 	const maxStars = includeParents ? 9 : 3; // 3★ max per uma
 
@@ -47,6 +49,10 @@ export function SparkFilterBar({ filters, onChange, includeParents, onIncludePar
 				<label className="spark-filter__parents">
 					<input type="checkbox" checked={includeParents} onChange={e => toggleParents(e.target.checked)} />
 					Include parents' sparks
+				</label>
+				<label className="spark-filter__parents">
+					<input type="checkbox" checked={hideRaceScenario} onChange={e => onHideRaceScenarioChange(e.target.checked)} />
+					Hide race &amp; scenario sparks
 				</label>
 				{filters.length > 0 && (
 					<button type="button" className="spark-filter__clear" onClick={() => onChange([])}>Clear filters</button>

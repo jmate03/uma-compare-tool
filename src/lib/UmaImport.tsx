@@ -38,9 +38,9 @@ const grade = (n: number): Grade => GRADE_BY_NUMBER[n] ?? 'G';
 // Spark IDs: last digit = stars; the rest identifies the spark.
 //   101–503        blue  (1 speed, 2 stamina, 3 power, 4 guts, 5 wit)
 //   1101–3403      pink  (11 turf, 12 dirt, 21–24 front/pace/late/end, 31–34 sprint/mile/medium/long)
-//   1xxxxxx        white race spark (likely)
-//   2xxxxxx        white skill spark (skill ID + stars)
-//   3xxxxxx        white scenario spark (likely)
+//   1xxxxxx        white race spark (factor_type 5)
+//   2xxxxxx        white skill spark (skill ID + stars, factor_type 4)
+//   3xxxxxx        white scenario spark (factor_type 6)
 //   10xxxxxx       green unique spark (card ID + stars)
 export function sparkCategory(factorId: number): SparkCategory {
 	if (factorId < 1000) return 'blue';
