@@ -111,6 +111,38 @@
 	background: #1d4ed8;
 }
 
+/* Shown while demo data is loaded */
+.uma-list__demo {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 12px;
+	margin-bottom: 16px;
+	padding: 10px 14px;
+	border: 1px solid #a16207;
+	border-radius: 6px;
+	background: rgba(234, 179, 8, 0.12);
+	color: #fde68a;
+}
+
+.uma-list__demo > span {
+	margin-right: auto;
+}
+
+.uma-list__demo-btn {
+	padding: 5px 12px;
+	border: 1px solid #a16207;
+	border-radius: 6px;
+	background: none;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+}
+
+.uma-list__demo-btn:hover {
+	background: rgba(234, 179, 8, 0.2);
+}
+
 /* Backup / restore / delete all; same pattern as the card's Export menu, opening downward */
 .data-menu {
 	position: relative;

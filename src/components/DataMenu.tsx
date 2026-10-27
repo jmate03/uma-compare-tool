@@ -5,10 +5,11 @@ interface DataMenuProps {
 	onBackup: () => void;
 	onRestore: (file: File) => void;
 	onClear: () => void;
+	onDemo?: () => void; // omitted while the demo is already showing
 }
 
 // Backup / restore of the app's own data (notes included), plus the last-resort delete
-export function DataMenu({ hasUmas, onBackup, onRestore, onClear }: DataMenuProps) {
+export function DataMenu({ hasUmas, onBackup, onRestore, onClear, onDemo }: DataMenuProps) {
 	const [open, setOpen] = useState(false);
 	const fileInput = useRef<HTMLInputElement>(null);
 
@@ -41,6 +42,11 @@ export function DataMenu({ hasUmas, onBackup, onRestore, onClear }: DataMenuProp
 					<button role="menuitem" type="button" onClick={() => pick(() => fileInput.current?.click())}>
 						Restore backup…
 					</button>
+					{onDemo && (
+						<button role="menuitem" type="button" onClick={() => pick(onDemo)}>
+							Try demo data
+						</button>
+					)}
 					<hr className="data-menu__sep" />
 					<button
 						className="data-menu__danger"

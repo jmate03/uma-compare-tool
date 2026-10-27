@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { exportBackup, restoreBackup, umaStore } from '../lib/UmaStorage';
+import { createMemoryUmaStore, exportBackup, restoreBackup, umaStore, type UmaStore } from '../lib/UmaStorage';
 import { importGameDump } from '../lib/UmaImport';
 import type { StoredUma } from '../lib/UmaTypes';
 import { umaName } from '../lib/UmaNames'
@@ -26,6 +26,9 @@ export function UmaList() {
 	const [compareIds, setCompareIds] = useState<string[]>([]); // in the order they were picked
 	const [comparing, setComparing] = useState(false);
 	const [helpOpen, setHelpOpen] = useState(false);
+	// Set while viewing the demo dump. Edits go to this in-memory store, never to saved data.
+	const [demoStore, setDemoStore] = useState<UmaStore | null>(null);
+	const store = demoStore ?? umaStore;
 
 	// Load saved umas once when the screen opens
 	useEffect(() => {
@@ -46,7 +49,12 @@ export function UmaList() {
 			}
 			await umaStore.replaceAll(next);
 			setUmas(await umaStore.list());
-			setCompareIds(prev => prev.filter(id => !removed.some(u => u.id === id)));
+			if (demoStore) {
+				setDemoStore(null); // importing your own dump ends the demo
+				setCompareIds([]);
+			} else {
+				setCompareIds(prev => prev.filter(id => !removed.some(u => u.id === id)));
+			}
 		} catch (err) {
 			alert(`Import failed: ${err instanceof Error ? err.message : err}`);
 		}
@@ -56,10 +64,33 @@ export function UmaList() {
 		try {
 			const count = await restoreBackup(file);
 			setUmas(await umaStore.list());
+			if (demoStore) {
+				setDemoStore(null);
+				setCompareIds([]);
+			}
 			alert(`Restored ${count} uma(s) from the backup.`);
 		} catch (err) {
 			alert(`Restore failed: ${err instanceof Error ? err.message : err}`);
 		}
+	}
+
+	async function enterDemo() {
+		try {
+			const res = await fetch(`${import.meta.env.BASE_URL}demo/trained_chara_data_demo.json`);
+			if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+			const demo = createMemoryUmaStore(importGameDump(await res.json(), []).umas);
+			setDemoStore(demo);
+			setUmas(await demo.list());
+			setCompareIds([]);
+		} catch (err) {
+			alert(`Couldn't load the demo data: ${err instanceof Error ? err.message : err}`);
+		}
+	}
+
+	async function exitDemo() {
+		setDemoStore(null);
+		setUmas(await umaStore.list());
+		setCompareIds([]);
 	}
 
 	async function handleClear() {
@@ -80,7 +111,7 @@ export function UmaList() {
 	async function handleNotesChange(id: string, notes: string) {
 		setUmas(prev => prev.map(u => (u.id === id ? { ...u, notes } : u)));
 		const uma = umas.find(u => u.id === id);
-		if (uma) await umaStore.save({ ...uma, notes }, id);
+		if (uma) await store.save({ ...uma, notes }, id);
 	}
 	// Lookup table so cards can show the names of parents you have saved
 	const byId = useMemo(() => new Map(umas.map(u => [u.id, u])), [umas]);
@@ -170,7 +201,8 @@ export function UmaList() {
 				</label>
 
 				<DataMenu
-					hasUmas={umas.length > 0}
+					hasUmas={!demoStore && umas.length > 0} // backup and delete act on saved data, not the demo
+					onDemo={demoStore ? undefined : enterDemo}
 					onBackup={exportBackup}
 					onRestore={handleRestore}
 					onClear={handleClear}
@@ -186,6 +218,28 @@ export function UmaList() {
 					?
 				</button>
 			</header>
+
+			{demoStore && (
+				<div className="uma-list__demo" role="status">
+					<span>You're viewing demo data. Nothing you change here is saved.</span>
+					<label className="uma-list__demo-btn">
+						Import your own
+						<input
+							type="file"
+							accept=".json"
+							hidden
+							onChange={e => {
+								const file = e.target.files?.[0];
+								if (file) handleImport(file);
+								e.target.value = '';
+							}}
+						/>
+					</label>
+					<button className="uma-list__demo-btn" type="button" onClick={exitDemo}>
+						Exit demo
+					</button>
+				</div>
+			)}
 
 			{mode === 'parent' && (
 				<SparkFilterBar
@@ -203,6 +257,9 @@ export function UmaList() {
 					{umas.length === 0 ? (
 						<>
 							No umas yet. Import your trained_chara_data.json to get started.{' '}
+							<button className="uma-list__empty-link" type="button" onClick={enterDemo}>
+								Or try it with demo data
+							</button>
 							<button className="uma-list__empty-link" type="button" onClick={() => setHelpOpen(true)}>
 								New here? Read the guide
 							</button>

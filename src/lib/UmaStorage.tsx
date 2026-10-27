@@ -54,43 +54,54 @@ export function unlinkRemoved(umas: StoredUma[], removed: StoredUma[]): StoredUm
 	}));
 }
 
-export const localUmaStore: UmaStore = {
-	async list() {
-		return readAll();
-	},
+// Shared by the localStorage and in-memory stores; only reading and writing the whole list differs
+function createUmaStore(read: () => StoredUma[], write: (umas: StoredUma[]) => void, clear: () => void): UmaStore {
+	return {
+		async list() {
+			return read();
+		},
 
-	async get(id) {
-		return readAll().find(u => u.id === id);
-	},
+		async get(id) {
+			return read().find(u => u.id === id);
+		},
 
-	async save(values, id) {
-		const umas = readAll();
-		const now = new Date().toISOString();
-		const existing = id ? umas.find(u => u.id === id) : undefined;
+		async save(values, id) {
+			const umas = read();
+			const now = new Date().toISOString();
+			const existing = id ? umas.find(u => u.id === id) : undefined;
 
-		const uma: StoredUma = existing
-			? { ...existing, ...values, updatedAt: now }
-			: { ...values, id: crypto.randomUUID(), createdAt: now, updatedAt: now };
+			const uma: StoredUma = existing
+				? { ...existing, ...values, updatedAt: now }
+				: { ...values, id: crypto.randomUUID(), createdAt: now, updatedAt: now };
 
-		writeAll(existing ? umas.map(u => (u.id === uma.id ? uma : u)) : [...umas, uma]);
-		return uma;
-	},
+			write(existing ? umas.map(u => (u.id === uma.id ? uma : u)) : [...umas, uma]);
+			return uma;
+		},
 
-	async remove(id) {
-		const umas = readAll();
-		const target = umas.find(u => u.id === id);
-		if (!target) return;
-		writeAll(unlinkRemoved(umas.filter(u => u.id !== id), [target]));
-	},
+		async remove(id) {
+			const umas = read();
+			const target = umas.find(u => u.id === id);
+			if (!target) return;
+			write(unlinkRemoved(umas.filter(u => u.id !== id), [target]));
+		},
 
-	async replaceAll(umas) {
-		writeAll(umas);
-	},
+		async replaceAll(umas) {
+			write(umas);
+		},
 
-	async clear() {
-		localStorage.removeItem(STORAGE_KEY);
-	},
-};
+		async clear() {
+			clear();
+		},
+	};
+}
+
+export const localUmaStore: UmaStore = createUmaStore(readAll, writeAll, () => localStorage.removeItem(STORAGE_KEY));
+
+// Lost on reload. Used by demo mode so the demo never touches the user's saved data.
+export function createMemoryUmaStore(initial: StoredUma[]): UmaStore {
+	let umas = initial;
+	return createUmaStore(() => umas, next => { umas = next; }, () => { umas = []; });
+}
 
 // The rest of the app imports this. Change this one line to switch backends.
 export const umaStore: UmaStore = localUmaStore;
