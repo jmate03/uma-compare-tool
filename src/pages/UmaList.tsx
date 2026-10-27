@@ -44,12 +44,6 @@ export function UmaList() {
 		setCompareIds([]);
 	}
  
-	async function handleDelete(id: string) {
-		await umaStore.remove(id);
-		setUmas(await umaStore.list());
-		setCompareIds(prev => prev.filter(c => c !== id));
-	}
-
 	function toggleCompare(id: string) {
 		setCompareIds(prev => (
 			prev.includes(id) ? prev.filter(c => c !== id)
@@ -204,7 +198,6 @@ export function UmaList() {
 							hideRaceScenario={hideRaceScenario}
 							highlighted={highlighted}
 							onNotesChange={handleNotesChange}
-							onDelete={handleDelete}
 							selected={compareIds.includes(uma.id)}
 							selectDisabled={compareFull && !compareIds.includes(uma.id)}
 							onToggleSelect={toggleCompare}

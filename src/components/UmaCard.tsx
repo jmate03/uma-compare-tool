@@ -3,6 +3,7 @@ import type { Grade, StoredUma } from '../lib/UmaTypes';
 import { skillName, skillRarity, sparkName, umaIconUrl, umaName, type SkillRarity } from '../lib/UmaNames';
 import { isRaceOrScenarioSpark, sparkTotals, type SparkTotal } from '../lib/UmaFilter';
 import { sharedSkillKey, sharedSparkKey, type SharedInfo } from '../lib/UmaCompare';
+import { umalatorJson } from '../lib/UmaExport';
 
 export type CardMode = 'parent' | 'ace';
 
@@ -21,7 +22,6 @@ interface UmaCardProps {
 	hideRaceScenario?: boolean; // tuck race/scenario sparks into the collapsible section
 	highlighted: Set<number>; // spark bases from the active filters
 	onNotesChange: (id: string, notes: string) => void;
-	onDelete?: (id: string) => void; // no Delete button when omitted
 	// Compare checkbox; shown only when onToggleSelect is given
 	selected?: boolean;
 	selectDisabled?: boolean; // compare cap reached
@@ -35,7 +35,7 @@ interface SharedProps extends SharedInfo {
 	onToggle: (open: boolean) => void;
 }
 
-export function UmaCard({ uma, mode, byId, includeParents, hideRaceScenario = false, highlighted, onNotesChange, onDelete, selected = false, selectDisabled = false, onToggleSelect, shared }: UmaCardProps) {
+export function UmaCard({ uma, mode, byId, includeParents, hideRaceScenario = false, highlighted, onNotesChange, selected = false, selectDisabled = false, onToggleSelect, shared }: UmaCardProps) {
 	const [notes, setNotes] = useState(uma.notes);
 	// Pick up notes saved from another card of the same uma (the compare overlay)
 	const [savedNotes, setSavedNotes] = useState(uma.notes);
@@ -160,10 +160,50 @@ export function UmaCard({ uma, mode, byId, includeParents, hideRaceScenario = fa
 							Compare
 						</label>
 					)}
-					{onDelete && <button className="uma-card__delete" onClick={() => onDelete(uma.id)}>Delete</button>}
+					<ExportMenu uma={uma} />
 				</div>
 			</footer>
 		</article>
+	);
+}
+
+// Opens a list of export formats; each copies the uma to the clipboard
+function ExportMenu({ uma }: { uma: StoredUma }) {
+	const [open, setOpen] = useState(false);
+	const [status, setStatus] = useState<string | null>(null);
+
+	async function copy(text: string) {
+		setOpen(false);
+		try {
+			await navigator.clipboard.writeText(text);
+			setStatus('Copied!');
+		} catch {
+			setStatus('Copy failed');
+		}
+		setTimeout(() => setStatus(null), 1500);
+	}
+
+	return (
+		<div
+			className="uma-card__export"
+			// Close when focus leaves the menu (click elsewhere, tab away)
+			onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false); }}
+			onKeyDown={e => { if (e.key === 'Escape') setOpen(false); }}
+		>
+			<button
+				className="uma-card__export-btn"
+				aria-haspopup="menu"
+				aria-expanded={open}
+				onClick={() => setOpen(o => !o)}
+			>
+				{status ?? 'Export'}
+			</button>
+			{open && (
+				<div className="uma-card__export-menu" role="menu">
+					<button role="menuitem" onClick={() => copy(umalatorJson(uma))}>Export for Umalator</button>
+				</div>
+			)}
+		</div>
 	);
 }
 
