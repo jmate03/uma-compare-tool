@@ -6,9 +6,9 @@
 	--muted: #8f97a6;
 	--accent: #2563eb;
 
-	max-width: 1400px;
+	max-width: 2400px;
 	margin: 0 auto;
-	padding: 24px 16px;
+	padding: 24px clamp(16px, 4vw, 40px);
 	color: var(--text);
 	font-family: system-ui, sans-serif;
 }
@@ -455,10 +455,10 @@
 	color: #93c5fd;
 }
 
-/* As many 300px+ columns as fit */
+/* As many 300px+ columns as fit, up to 4 (a column is never narrower than a quarter of the row) */
 .uma-list__grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(max(300px, (100% - 3 * 16px) / 4), 1fr));
 	gap: 16px;
 }
 
@@ -853,21 +853,22 @@
 	width: fit-content;
 	margin: 20px auto 0;
 	padding: 10px 14px;
-	background: var(--card);
-	border: 1px solid var(--card-border);
+	/* Blue tint and glow so it doesn't blend into the cards behind it */
+	background: #1a2540;
+	border: 1px solid var(--accent);
 	border-radius: 10px;
-	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 4px rgba(37, 99, 235, 0.2);
 }
 
 .compare-bar__hint {
 	font-size: 0.75rem;
-	color: var(--muted);
+	color: #b4c3e0;
 }
 
 .compare-bar__clear {
 	background: none;
-	border: 1px solid var(--card-border);
-	color: var(--muted);
+	border: 1px solid #3b4a6b;
+	color: #b4c3e0;
 	padding: 7px 12px;
 	border-radius: 6px;
 	font: inherit;
@@ -900,7 +901,7 @@ body:has(.compare[open]) {
 }
 
 .compare {
-	width: min(100vw - 32px, 1400px);
+	width: min(100vw - 2 * clamp(16px, 6vw, 120px), 2200px);
 	max-width: none;
 	max-height: calc(100vh - 32px);
 	padding: 0;
@@ -918,7 +919,7 @@ body:has(.compare[open]) {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
-	padding: 16px;
+	padding: 16px clamp(16px, 4vw, 32px);
 }
 
 .compare__header {
