@@ -10,6 +10,7 @@ The following is a guide on how to use the tool. If you need to revisit this gui
 4. [Ace Mode](#ace-mode)
    - [Skill Filters](#skill-filters)
 5. [Compare View](#compare-view)
+6. [Data Management](#data-management)
 
 ## Getting Started  
 - First get a dump from the game using [umadump](https://werseter.github.io/umadump/).
