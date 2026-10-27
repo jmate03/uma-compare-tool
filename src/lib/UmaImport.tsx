@@ -1,5 +1,6 @@
 // Converts umadump's trained_chara_data.json into StoredUma[].
 import type { Grade, LegacyParent, Spark, SparkCategory, StoredUma } from './UmaTypes';
+import { unlinkRemoved } from './UmaStorage';
 
 interface DumpFactor { factor_id: number; level: number }
 
@@ -27,6 +28,7 @@ export interface DumpUma {
 	memo: string;
 	icon_type: number;
 	create_time: string;
+	use_type?: number; // 0 = owned by the player
 }
 
 // ---------- Decoding helpers ----------
@@ -69,15 +71,22 @@ const signature = (cardId: number, factors: DumpFactor[]) =>
  * Merges a dump into the existing umas.
  * - Matches existing umas by gameId, so re-importing updates instead of duplicating.
  * - Keeps fields (type, notes) on umas that are already stored, everything else refreshed from dump
+ * - Drops imported umas missing from the dump (assumed transferred in game). Manual entries are kept.
  * - Links parents to saved umas where possible.
+ * Returns the new full list plus the dropped umas, so the caller can confirm before saving.
  */
-export function importGameDump(raw: unknown, existing: StoredUma[]): StoredUma[] {
+export function importGameDump(raw: unknown, existing: StoredUma[]): { umas: StoredUma[]; removed: StoredUma[] } {
 	if (!Array.isArray(raw)) throw new Error('Expected trained_chara_data.json (an array of veterans).');
-	const dump = raw as DumpUma[];
+	// The dump tool sometimes includes umas the player doesn't own (use_type != 0); skip those.
+	const dump = (raw as DumpUma[]).filter(d => (d.use_type ?? 0) === 0);
 	const now = new Date().toISOString();
 
-	const byGameId = new Map(existing.filter(u => u.gameId !== undefined).map(u => [u.gameId!, u]));
-	const result = new Map(existing.map(u => [u.id, u]));
+	const inDump = new Set(dump.map(d => d.trained_chara_id));
+	const removed = existing.filter(u => u.gameId !== undefined && !inDump.has(u.gameId));
+	const kept = existing.filter(u => !removed.includes(u));
+
+	const byGameId = new Map(kept.filter(u => u.gameId !== undefined).map(u => [u.gameId!, u]));
+	const result = new Map(kept.map(u => [u.id, u]));
 
 	// Pass 1: create/update every veteran (parents filled in pass 2)
 	const idByGameId = new Map<number, string>();
@@ -130,5 +139,6 @@ export function importGameDump(raw: unknown, existing: StoredUma[]): StoredUma[]
 		uma.parents = [toParent(10), toParent(20)];
 	}
 
-	return [...result.values()];
+	// Dumped umas only link to each other, but manual entries may link to a dropped one
+	return { umas: unlinkRemoved([...result.values()], removed), removed };
 }

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { umaStore } from '../lib/UmaStorage';
+import { exportBackup, restoreBackup, umaStore } from '../lib/UmaStorage';
 import { importGameDump } from '../lib/UmaImport';
 import type { StoredUma } from '../lib/UmaTypes';
 import { umaName } from '../lib/UmaNames'
@@ -7,6 +7,7 @@ import './UmaListCSS.css'
 import { COMPARE_LIMIT, UmaCard, type CardMode } from '../components/UmaCard';
 import { CompareOverlay } from '../components/CompareOverlay';
 import { SparkFilterBar } from '../components/SparkFilterBar';
+import { DataMenu } from '../components/DataMenu';
 import { matchesSparkFilters, type SparkFilter } from '../lib/UmaFilter';
 import { SORT_OPTIONS, sortUmas, type SortDir, type SortKey } from '../lib/UmaSort';
 
@@ -32,13 +33,37 @@ export function UmaList() {
 	}, []);
  
 	async function handleImport(file: File) {
-		const raw = JSON.parse(await file.text());
-		await umaStore.replaceAll(importGameDump(raw, await umaStore.list()));
-		setUmas(await umaStore.list());
+		try {
+			const raw = JSON.parse(await file.text());
+			const { umas: next, removed } = importGameDump(raw, await umaStore.list());
+			if (removed.length > 0) {
+				const names = removed.slice(0, 10).map(u => `• ${umaName(u)}`).join('\n');
+				const more = removed.length > 10 ? `\n…and ${removed.length - 10} more` : '';
+				const msg = `${removed.length} uma(s) aren't in this dump, so they were probably transferred in game. `
+					+ `Remove them, along with their notes?\n\n${names}${more}\n\n`
+					+ 'If this is the wrong dump, cancel and nothing will change.';
+				if (!confirm(msg)) return;
+			}
+			await umaStore.replaceAll(next);
+			setUmas(await umaStore.list());
+			setCompareIds(prev => prev.filter(id => !removed.some(u => u.id === id)));
+		} catch (err) {
+			alert(`Import failed: ${err instanceof Error ? err.message : err}`);
+		}
 	}
- 
+
+	async function handleRestore(file: File) {
+		try {
+			const count = await restoreBackup(file);
+			setUmas(await umaStore.list());
+			alert(`Restored ${count} uma(s) from the backup.`);
+		} catch (err) {
+			alert(`Restore failed: ${err instanceof Error ? err.message : err}`);
+		}
+	}
+
 	async function handleClear() {
-		if (!confirm(`Delete all ${umas.length} umas? This also removes your notes and types, and can't be undone.`)) return;
+		if (!confirm(`Delete all ${umas.length} umas? This also removes your notes and types, and can't be undone.\n\nConsider Data → Back up data first.`)) return;
 		await umaStore.clear();
 		setUmas([]);
 		setCompareIds([]);
@@ -144,14 +169,12 @@ export function UmaList() {
 					/>
 				</label>
 
-				<button
-					className="uma-list__clear"
-					type="button"
-					disabled={umas.length === 0}
-					onClick={handleClear}
-				>
-					Clear all
-				</button>
+				<DataMenu
+					hasUmas={umas.length > 0}
+					onBackup={exportBackup}
+					onRestore={handleRestore}
+					onClear={handleClear}
+				/>
 
 				<button
 					className="uma-list__help"

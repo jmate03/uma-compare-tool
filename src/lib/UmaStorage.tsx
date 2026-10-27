@@ -42,6 +42,18 @@ function writeAll(umas: StoredUma[]) {
 	localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
+// Children that point at a removed uma get a copy of its name and sparks,
+// so they keep their lineage data.
+export function unlinkRemoved(umas: StoredUma[], removed: StoredUma[]): StoredUma[] {
+	const copies = new Map(removed.map(r => [r.id, { kind: 'imported', variantId: r.variantId, sparks: r.sparks } satisfies LegacyParent]));
+	return umas.map(u => ({
+		...u,
+		parents: u.parents.map(p =>
+			p.kind === 'saved' && copies.has(p.umaId) ? copies.get(p.umaId)! : p
+		) as [LegacyParent, LegacyParent],
+	}));
+}
+
 export const localUmaStore: UmaStore = {
 	async list() {
 		return readAll();
@@ -64,29 +76,11 @@ export const localUmaStore: UmaStore = {
 		return uma;
 	},
 
-	// Children that point at the deleted uma get a copy of its name and sparks,
-	// so they keep their lineage data.
 	async remove(id) {
 		const umas = readAll();
 		const target = umas.find(u => u.id === id);
 		if (!target) return;
-
-		const copy: LegacyParent = {
-			kind: 'imported',
-			variantId: target.variantId,
-			sparks: target.sparks,
-		};
-
-		writeAll(
-			umas
-				.filter(u => u.id !== id)
-				.map(u => ({
-					...u,
-					parents: u.parents.map(p =>
-						p.kind === 'saved' && p.umaId === id ? copy : p
-					) as [LegacyParent, LegacyParent],
-				}))
-		);
+		writeAll(unlinkRemoved(umas.filter(u => u.id !== id), [target]));
 	},
 
 	async replaceAll(umas) {
@@ -116,7 +110,9 @@ export async function exportBackup() {
 
 // Merges by id: umas in the backup overwrite existing ones with the same id.
 export async function restoreBackup(file: File): Promise<number> {
-	const data = migrate(JSON.parse(await file.text()) as StoredData);
+	const parsed = JSON.parse(await file.text());
+	if (!Array.isArray(parsed?.umas)) throw new Error("That file isn't an uma-compare-tool backup.");
+	const data = migrate(parsed as StoredData);
 	const byId = new Map(readAll().map(u => [u.id, u]));
 	for (const uma of data.umas) byId.set(uma.id, uma);
 	writeAll([...byId.values()]);
