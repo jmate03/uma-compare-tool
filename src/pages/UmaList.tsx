@@ -6,6 +6,7 @@ import { umaName } from '../lib/UmaNames'
 import './UmaListCSS.css'
 import { COMPARE_LIMIT, UmaCard, type CardMode } from '../components/UmaCard';
 import { CompareOverlay } from '../components/CompareOverlay';
+import { LineageOverlay } from '../components/LineageOverlay';
 import { SparkFilterBar } from '../components/SparkFilterBar';
 import { DataMenu } from '../components/DataMenu';
 import { matchesSparkFilters, type SparkFilter } from '../lib/UmaFilter';
@@ -25,6 +26,7 @@ export function UmaList() {
 	const [sortDir, setSortDir] = useState<SortDir>('desc');
 	const [compareIds, setCompareIds] = useState<string[]>([]); // in the order they were picked
 	const [comparing, setComparing] = useState(false);
+	const [expandedId, setExpandedId] = useState<string | null>(null); // uma shown in the lineage overlay
 	const [helpOpen, setHelpOpen] = useState(false);
 	// Set while viewing the demo dump. Edits go to this in-memory store, never to saved data.
 	const [demoStore, setDemoStore] = useState<UmaStore | null>(null);
@@ -281,6 +283,7 @@ export function UmaList() {
 							selected={compareIds.includes(uma.id)}
 							selectDisabled={compareFull && !compareIds.includes(uma.id)}
 							onToggleSelect={toggleCompare}
+							onExpand={setExpandedId}
 						/>
 					))}
 				</div>
@@ -314,6 +317,18 @@ export function UmaList() {
 					onNotesChange={handleNotesChange}
 					onRemove={toggleCompare}
 					onClose={() => setComparing(false)}
+				/>
+			)}
+
+			{/* Closes on its own if the uma goes away (re-import, leaving the demo) */}
+			{expandedId && byId.has(expandedId) && (
+				<LineageOverlay
+					uma={byId.get(expandedId)!}
+					byId={byId}
+					hideRaceScenario={hideRaceScenario}
+					onHideRaceScenarioChange={setHideRaceScenario}
+					highlighted={highlighted}
+					onClose={() => setExpandedId(null)}
 				/>
 			)}
 

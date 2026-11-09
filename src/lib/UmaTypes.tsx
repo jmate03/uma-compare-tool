@@ -43,10 +43,19 @@ export interface StoredUma extends UmaFormValues {
 	id: string;
 	gameId?: number; // trained_chara_id from the dump. undefined for manually entered umas
 	iconType?: number; // in-game favorite icon from the dump: 0 = none, 1–13 = icon
+	// Parents of each parent ([A's two, B's two]) as the dump recorded them. Undefined for manual entries
+	// and umas last imported before this was added; null where the dump had no entry.
+	grandparents?: [[Ancestor | null, Ancestor | null], [Ancestor | null, Ancestor | null]];
 	createdAt: string;
 	updatedAt: string;
     charId?: number;
     outfitId?: number;
+}
+
+// A standalone copy of an uma from someone's lineage
+export interface Ancestor {
+	variantId: number;
+	sparks: Spark[];
 }
 
 export interface Spark {

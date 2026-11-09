@@ -13,7 +13,7 @@ export interface UmaStore {
 // ---------- localStorage implementation ----------
 
 const STORAGE_KEY = 'uma-tracker:umas';
-const SCHEMA_VERSION = 2; // bump when the shape changes, and handle it in migrate()
+const SCHEMA_VERSION = 3; // bump when the shape changes, and handle it in migrate()
 
 interface StoredData {
 	version: number;
@@ -23,6 +23,8 @@ interface StoredData {
 function migrate(data: StoredData): StoredData {
 	// v2: skills added. Old umas get them on their next dump import.
 	if (data.version === 1) { data.umas = data.umas.map(u => ({ ...u, skills: [] })); data.version = 2; }
+	// v3: optional grandparents added. Nothing to convert; umas get them on their next dump import.
+	if (data.version === 2) data.version = 3;
 	return data;
 }
 

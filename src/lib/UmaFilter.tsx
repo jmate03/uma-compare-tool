@@ -1,5 +1,5 @@
 // Spark-based filtering for the uma list
-import type { SparkCategory, StoredUma } from './UmaTypes';
+import type { LegacyParent, Spark, SparkCategory, StoredUma } from './UmaTypes';
 import { sparkCategory } from './UmaImport';
 import { SPARK_NAMES } from './UmaNames';
 
@@ -51,29 +51,32 @@ export interface SparkTotal {
 	total: number; // own + parents (or just own when parents aren't included)
 }
 
-// Stars per spark for an uma, optionally including both parents' sparks.
+// Stars per spark: "own" sparks count toward both own and total, "inherited" ones only toward total.
 // Sorted blue → pink → green → white, then by total stars.
-export function sparkTotals(uma: StoredUma, byId: Map<string, StoredUma>, includeParents: boolean): SparkTotal[] {
+export function sumSparks(own: Spark[], inherited: Spark[] = []): SparkTotal[] {
 	const totals = new Map<number, SparkTotal>();
-	const add = (factorId: number, stars: number, isOwn: boolean) => {
-		const base = sparkBase(factorId);
-		const t = totals.get(base) ?? { base, category: sparkCategory(factorId), own: 0, total: 0 };
-		if (isOwn) t.own += stars;
-		t.total += stars;
+	const add = (s: Spark, isOwn: boolean) => {
+		const base = sparkBase(s.factorId);
+		const t = totals.get(base) ?? { base, category: sparkCategory(s.factorId), own: 0, total: 0 };
+		if (isOwn) t.own += s.stars;
+		t.total += s.stars;
 		totals.set(base, t);
 	};
-
-	for (const s of uma.sparks) add(s.factorId, s.stars, true);
-	if (includeParents) {
-		for (const p of uma.parents) {
-			const sparks = p.kind === 'saved' ? byId.get(p.umaId)?.sparks ?? [] : p.sparks;
-			for (const s of sparks) add(s.factorId, s.stars, false);
-		}
-	}
+	for (const s of own) add(s, true);
+	for (const s of inherited) add(s, false);
 
 	return [...totals.values()].sort((a, b) =>
 		CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category) || b.total - a.total
 	);
+}
+
+// A parent's sparks, looking saved parents up in byId
+export const parentSparks = (p: LegacyParent, byId: Map<string, StoredUma>): Spark[] =>
+	p.kind === 'saved' ? byId.get(p.umaId)?.sparks ?? [] : p.sparks;
+
+// Stars per spark for an uma, optionally including both parents' sparks
+export function sparkTotals(uma: StoredUma, byId: Map<string, StoredUma>, includeParents: boolean): SparkTotal[] {
+	return sumSparks(uma.sparks, includeParents ? uma.parents.flatMap(p => parentSparks(p, byId)) : []);
 }
 
 // Within a category, filters combine in order using their joins, with AND binding tighter than OR:

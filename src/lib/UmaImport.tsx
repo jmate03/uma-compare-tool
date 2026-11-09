@@ -1,11 +1,11 @@
 // Converts umadump's trained_chara_data.json into StoredUma[].
-import type { Grade, LegacyParent, Spark, SparkCategory, StoredUma } from './UmaTypes';
+import type { Ancestor, Grade, LegacyParent, Spark, SparkCategory, StoredUma } from './UmaTypes';
 import { unlinkRemoved } from './UmaStorage';
 
 interface DumpFactor { factor_id: number; level: number }
 
 interface DumpParent {
-	position_id: number; // 10 / 20 = parents, 11/12/21/22 = grandparents (not passed on, ignored)
+	position_id: number; // 10 / 20 = parents, 11/12 = parent 10's parents, 21/22 = parent 20's
 	card_id: number;
 	factor_info_array: DumpFactor[];
 	owner_viewer_id: number; // non-zero = borrowed from another player
@@ -92,6 +92,11 @@ export function importGameDump(raw: unknown, existing: StoredUma[]): { umas: Sto
 	const idByGameId = new Map<number, string>();
 	for (const d of dump) {
 		const prev = byGameId.get(d.trained_chara_id);
+		// Grandparents aren't passed on to children, so they're only kept as copies for display
+		const ancestor = (positionId: number): Ancestor | null => {
+			const p = d.succession_chara_array.find(s => s.position_id === positionId);
+			return p ? { variantId: p.card_id, sparks: p.factor_info_array.map(toSpark) } : null;
+		};
 		const uma: StoredUma = {
 			id: prev?.id ?? crypto.randomUUID(),
 			gameId: d.trained_chara_id,
@@ -114,6 +119,7 @@ export function importGameDump(raw: unknown, existing: StoredUma[]): { umas: Sto
 				{ kind: 'imported', sparks: [] },
 				{ kind: 'imported', sparks: [] },
 			],
+			grandparents: [[ancestor(11), ancestor(12)], [ancestor(21), ancestor(22)]],
 			score: d.rank_score,
 			iconType: d.icon_type,
 			createdAt: prev?.createdAt ?? d.create_time ?? now,

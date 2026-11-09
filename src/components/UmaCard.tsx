@@ -26,6 +26,7 @@ interface UmaCardProps {
 	selected?: boolean;
 	selectDisabled?: boolean; // compare cap reached
 	onToggleSelect?: (id: string) => void;
+	onExpand?: (id: string) => void; // opens the lineage overlay; button shown only when given
 	// Compare view: entries every compared uma has go in a collapsible section (see lib/UmaCompare)
 	shared?: SharedProps;
 }
@@ -35,7 +36,7 @@ interface SharedProps extends SharedInfo {
 	onToggle: (open: boolean) => void;
 }
 
-export function UmaCard({ uma, mode, byId, includeParents, hideRaceScenario = false, highlighted, onNotesChange, selected = false, selectDisabled = false, onToggleSelect, shared }: UmaCardProps) {
+export function UmaCard({ uma, mode, byId, includeParents, hideRaceScenario = false, highlighted, onNotesChange, selected = false, selectDisabled = false, onToggleSelect, onExpand, shared }: UmaCardProps) {
 	const [notes, setNotes] = useState(uma.notes);
 	// Pick up notes saved from another card of the same uma (the compare overlay)
 	const [savedNotes, setSavedNotes] = useState(uma.notes);
@@ -49,44 +50,6 @@ export function UmaCard({ uma, mode, byId, includeParents, hideRaceScenario = fa
 	const fullName = umaName(uma);
 	const [, outfit, charaName] = fullName.match(/^\[(.*?)\]\s*(.*)$/) ?? [null, null, fullName];
 	const iconUrl = umaIconUrl(uma);
-
-	const parentNames = uma.parents.map(p =>
-		p.kind === 'saved' ? umaName(byId.get(p.umaId) ?? {}) : umaName(p)
-	);
-
-	function renderSpark(s: SparkTotal) {
-		const name = sparkName(s.base);
-		// Shared sparks with differing stars: the highest is highlighted, the rest show how far behind they are
-		const range = shared?.sparkStars.get(s.base);
-		const best = range && range.min < range.max && s.total === range.max;
-		const behind = range ? s.total - range.max : 0;
-		const className = `spark spark--${s.category}${highlighted.has(s.base) ? ' spark--match' : ''}${best ? ' spark--best' : ''}`;
-		const diff = behind < 0 && (
-			<span className="spark__diff" aria-label={`${-behind} stars fewer than the best`}>{behind} ★</span>
-		);
-		return includeParents ? (
-			<span
-				key={s.base}
-				className={className}
-				title={s.own ? `${s.own}★ on this uma, ${s.total - s.own}★ from parents` : 'From parents only'}
-			>
-				{/* Green sparks are one per uma, so a plain marker is enough; others show the uma's own count */}
-				{s.own > 0 && s.category === 'green' && <span className="spark__own" aria-label="On this uma">●</span>}
-				<span className="spark__stars">{s.total} ★</span> {name}
-				{s.own > 0 && s.category !== 'green' && (
-					<span className="spark__own-count" aria-label={`${s.own} stars on this uma`}>
-						<span className="spark__own">●</span>{s.own} ★
-					</span>
-				)}
-				{diff}
-			</span>
-		) : (
-			<span key={s.base} className={className}>
-				<span className="spark__stars">{s.total} ★</span> {name}
-				{diff}
-			</span>
-		);
-	}
 
 	return (
 		<article className={`uma-card${selected ? ' uma-card--selected' : ''}`}>
@@ -111,14 +74,12 @@ export function UmaCard({ uma, mode, byId, includeParents, hideRaceScenario = fa
 			</header>
 
 			{mode === 'ace' ? <AceDetails uma={uma} shared={shared} /> : (
-				<SplitShared
-					items={sparkTotals(uma, byId, includeParents)}
-					keyOf={sharedSparkKey}
-					// Sparks an active filter names stay visible
-					isHidden={s => hideRaceScenario && isRaceOrScenarioSpark(s.base) && !highlighted.has(s.base)}
+				<SparkList
+					totals={sparkTotals(uma, byId, includeParents)}
+					combined={includeParents}
+					hideRaceScenario={hideRaceScenario}
+					highlighted={highlighted}
 					shared={shared}
-					className="uma-card__sparks"
-					render={renderSpark}
 				/>
 			)}
 
@@ -140,12 +101,17 @@ export function UmaCard({ uma, mode, byId, includeParents, hideRaceScenario = fa
 			</div>
 
 			<footer className="uma-card__footer">
-				{mode === 'parent' && (
-					<span className="uma-card__parents" title={parentNames.join(' × ')}>
-						Parents: {parentNames.join(' × ')}
-					</span>
-				)}
 				<div className="uma-card__actions">
+					{onExpand && (
+						<button
+							className="uma-card__expand-btn"
+							type="button"
+							title="Show this uma's sparks by parent and grandparent"
+							onClick={() => onExpand(uma.id)}
+						>
+							Expand
+						</button>
+					)}
 					{onToggleSelect && (
 						<label
 							className="uma-card__compare"
@@ -164,6 +130,77 @@ export function UmaCard({ uma, mode, byId, includeParents, hideRaceScenario = fa
 				</div>
 			</footer>
 		</article>
+	);
+}
+
+interface SparkListProps {
+	totals: SparkTotal[];
+	combined: boolean; // totals include parents: mark the uma's own stars
+	hideRaceScenario: boolean;
+	highlighted: Set<number>;
+	shared?: SharedProps;
+	// Lineage overlay: white sparks become toggle buttons for the loops table
+	picked?: Set<number>;
+	onPick?: (base: number) => void;
+}
+
+// Parent-mode spark chips. Also used by the lineage overlay.
+export function SparkList({ totals, combined, hideRaceScenario, highlighted, shared, picked, onPick }: SparkListProps) {
+	function renderSpark(s: SparkTotal) {
+		const name = sparkName(s.base);
+		// Shared sparks with differing stars: the highest is highlighted, the rest show how far behind they are
+		const range = shared?.sparkStars.get(s.base);
+		const best = range && range.min < range.max && s.total === range.max;
+		const behind = range ? s.total - range.max : 0;
+		const pickable = !!onPick && s.category === 'white';
+		const isPicked = pickable && !!picked?.has(s.base);
+		const className = `spark spark--${s.category}${highlighted.has(s.base) ? ' spark--match' : ''}${best ? ' spark--best' : ''}`
+			+ `${pickable ? ' spark--pickable' : ''}${isPicked ? ' spark--picked' : ''}`;
+		// Pickable chips are buttons; everything else about them stays the same
+		const Tag = pickable ? 'button' : 'span';
+		const pickProps = pickable
+			? { type: 'button' as const, 'aria-pressed': isPicked, onClick: () => onPick!(s.base) }
+			: {};
+		const diff = behind < 0 && (
+			<span className="spark__diff" aria-label={`${-behind} stars fewer than the best`}>{behind} ★</span>
+		);
+		return combined ? (
+			<Tag
+				key={s.base}
+				className={className}
+				title={(s.own ? `${s.own}★ on this uma, ${s.total - s.own}★ from parents` : 'From parents only')
+					+ (pickable ? `
+${isPicked ? 'Click to stop checking' : 'Click to check'} for loops` : '')}
+				{...pickProps}
+			>
+				{/* Green sparks are one per uma, so a plain marker is enough; others show the uma's own count */}
+				{s.own > 0 && s.category === 'green' && <span className="spark__own" aria-label="On this uma">●</span>}
+				<span className="spark__stars">{s.total} ★</span> {name}
+				{s.own > 0 && s.category !== 'green' && (
+					<span className="spark__own-count" aria-label={`${s.own} stars on this uma`}>
+						<span className="spark__own">●</span>{s.own} ★
+					</span>
+				)}
+				{diff}
+			</Tag>
+		) : (
+			<Tag key={s.base} className={className} {...pickProps}>
+				<span className="spark__stars">{s.total} ★</span> {name}
+				{diff}
+			</Tag>
+		);
+	}
+
+	return (
+		<SplitShared
+			items={totals}
+			keyOf={sharedSparkKey}
+			// Sparks an active filter names stay visible
+			isHidden={s => hideRaceScenario && isRaceOrScenarioSpark(s.base) && !highlighted.has(s.base)}
+			shared={shared}
+			className="uma-card__sparks"
+			render={renderSpark}
+		/>
 	);
 }
 

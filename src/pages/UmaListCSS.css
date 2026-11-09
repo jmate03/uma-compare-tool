@@ -704,10 +704,19 @@
 	color: var(--muted);
 }
 
-.uma-card__parents {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+.uma-card__expand-btn {
+	background: none;
+	border: 1px solid var(--card-border);
+	color: var(--muted);
+	border-radius: 4px;
+	padding: 2px 8px;
+	font-size: 0.7rem;
+	cursor: pointer;
+}
+
+.uma-card__expand-btn:hover {
+	border-color: var(--accent);
+	color: var(--text);
 }
 
 /* Notes */
@@ -1002,6 +1011,246 @@ body:has(.compare[open]) {
 /* Cards here are all on screen, so skip the list's off-screen placeholder */
 .compare__columns .uma-card {
 	content-visibility: visible;
+}
+
+/* ---------- Lineage overlay (reuses the compare dialog styles) ---------- */
+
+.lineage {
+	width: min(100vw - 32px, 760px);
+}
+
+.lineage .compare__title {
+	flex: 1;
+	font-size: 1rem;
+}
+
+.lineage__card {
+	content-visibility: visible;
+	min-height: 120px;
+}
+
+.lineage__heading {
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	font-size: 0.9rem;
+}
+
+.lineage__heading-name {
+	font-size: 0.75rem;
+	font-weight: 400;
+	color: var(--muted);
+}
+
+.lineage__empty {
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--muted);
+}
+
+/* Self, then side A, then side B */
+.lineage__picker {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 12px 20px;
+}
+
+.lineage__group {
+	display: flex;
+	gap: 6px;
+}
+
+.lineage__group + .lineage__group {
+	padding-left: 20px;
+	border-left: 1px dashed var(--card-border);
+}
+
+.lineage__btn {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	width: 72px;
+	padding: 6px 4px;
+	background: var(--card);
+	border: 1px solid var(--card-border);
+	border-radius: 8px;
+	color: var(--muted);
+	font: inherit;
+	font-size: 0.7rem;
+	cursor: pointer;
+}
+
+.lineage__btn:hover:not(:disabled) {
+	border-color: var(--muted);
+	color: var(--text);
+}
+
+.lineage__btn--active,
+.lineage__btn--active:hover:not(:disabled) {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 1px var(--accent);
+	color: var(--text);
+}
+
+.lineage__btn:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+.lineage__btn-img {
+	width: 48px;
+	height: 48px;
+	border-radius: 6px;
+	background: var(--card-border);
+	overflow: hidden;
+}
+
+.lineage__btn-img img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.lineage__btn-label {
+	white-space: nowrap;
+}
+
+/* White sparks in the Combined view toggle rows in the loops table */
+button.spark {
+	border-top: none;
+	border-right: none;
+	border-bottom: none;
+	color: inherit;
+	font: inherit;
+	font-size: 0.7rem;
+	text-align: left;
+}
+
+.spark--pickable {
+	cursor: pointer;
+}
+
+.spark--pickable:hover {
+	background: #313644;
+}
+
+.spark--picked,
+.spark--picked:hover {
+	box-shadow: 0 0 0 1px var(--accent);
+	background: #1e2a4a;
+}
+
+.lineage__loops {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.lineage__loops-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.lineage__loops-header .lineage__heading {
+	margin-right: auto;
+}
+
+.lineage__loops-btn {
+	background: none;
+	border: 1px solid var(--card-border);
+	color: var(--muted);
+	border-radius: 4px;
+	padding: 2px 8px;
+	font-size: 0.7rem;
+	cursor: pointer;
+}
+
+.lineage__loops-btn:hover {
+	border-color: var(--accent);
+	color: var(--text);
+}
+
+.lineage__link {
+	background: none;
+	border: none;
+	padding: 0;
+	color: var(--accent);
+	font: inherit;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.lineage__loops-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.75rem;
+}
+
+.lineage__loops-table th,
+.lineage__loops-table td {
+	padding: 4px 8px;
+	border-bottom: 1px solid var(--card-border);
+	text-align: center;
+	white-space: nowrap;
+}
+
+.lineage__loops-table thead th {
+	font-weight: 500;
+	color: var(--muted);
+}
+
+.lineage__loops-table tbody th {
+	text-align: left;
+	font-weight: 400;
+	white-space: normal;
+}
+
+.lineage__loop-missing {
+	color: var(--muted);
+}
+
+.lineage__loop-count {
+	font-weight: 600;
+}
+
+.lineage__loop--full .lineage__loop-count {
+	color: #4ade80;
+}
+
+.lineage__loop-remove {
+	background: none;
+	border: none;
+	color: var(--muted);
+	font-size: 1rem;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.lineage__loop-remove:hover {
+	color: var(--text);
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+/* Narrow screens: one group per row, without the dividers */
+@media (max-width: 560px) {
+	.lineage__group + .lineage__group {
+		padding-left: 0;
+		border-left: none;
+	}
 }
 
 /* ---------- Help overlay ---------- */
