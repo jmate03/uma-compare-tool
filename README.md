@@ -11,6 +11,9 @@ You can also download the [demo data here](public\demo\trained_chara_data_demo.j
  
 Built with React + Vite, written in Typescript
 
+<img width="1905" height="955" alt="image" src="https://github.com/user-attachments/assets/38d2088b-d7fb-4870-a7d0-846b884645a1" />
+<img width="1919" height="956" alt="image" src="https://github.com/user-attachments/assets/99285589-8469-454d-a6c6-003f635863b4" />
+
 
 
 
@@ -24,7 +27,7 @@ Note: A full more in-depth guide is available on the site by clicking the '?' ic
 - Each uma displays a summary of their spark values either including their parents or without.
 - They can be filtered by the different spark types: blues, pinks, greens, whites. more filtering/sorting options to come.
 - You can also add more in depth notes to the umas compared to the limited notes in game.
-- (TODO) Affinities, comparing two umas, display and sort by favorited umas in game
+- (TODO) Affinities
 
 ### Ace View
 - Each uma displays a summary of their stats, aptitudes, and skills
